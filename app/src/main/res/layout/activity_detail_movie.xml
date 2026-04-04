@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    tools:context=".ui.view.DetailMovieActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- ============================================
+             HERO SECTION - Fixed Poster Background
+             ============================================ -->
+
+        <FrameLayout
+            android:id="@+id/posterContainer"
+            android:layout_width="0dp"
+            android:layout_height="380dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <!-- Poster Image (Full-width cinematic) -->
+            <ImageView
+                android:id="@+id/ivPoster"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:contentDescription="Movie Poster"
+                tools:srcCompat="@tools:sample/avatars" />
+
+            <!-- Dark Gradient Overlay -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/gradient_overlay" />
+
+            <!-- Back Button (Floating on poster) -->
+            <ImageView
+                android:id="@+id/btnBack"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="16dp"
+                android:contentDescription="Back"
+                android:padding="8dp"
+                android:background="@drawable/rounded_button_semi_black"
+                android:tint="@android:color/white"
+                android:scaleType="centerInside"
+                app:srcCompat="@drawable/back_dark"
+                android:clickable="true"
+                android:focusable="true" />
+
+        </FrameLayout>
+
+        <!-- ============================================
+             SCROLLABLE CONTENT WITH FLOATING CARD
+             ============================================ -->
+
+        <ScrollView
+            android:id="@+id/scrollContent"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="-80dp"
+            android:layout_marginBottom="80dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/posterContainer">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="80dp"
+                android:paddingBottom="0dp">
+
+                <!-- ============ UNIFIED CONTENT CARD ============ -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/contentCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_marginBottom="20dp"
+                    app:cardBackgroundColor="#0F0F12"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="12dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <!-- ========== TITLE SECTION ========== -->
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/titleSection"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:padding="24dp"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent">
+
+                            <!-- Movie Title -->
+                            <TextView
+                                android:id="@+id/tvMovieTitle"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:text="The Gorge"
+                                android:textColor="@android:color/white"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:maxLines="2"
+                                android:ellipsize="end"
+                                app:layout_constraintEnd_toStartOf="@+id/btnRating"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent" />
+
+                            <!-- Rating Icon -->
+                            <ImageView
+                                android:id="@+id/btnRating"
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_marginStart="8dp"
+                                android:layout_marginEnd="8dp"
+                                android:tint="#FFA726"
+                                android:contentDescription="Rating"
+                                android:scaleType="centerInside"
+                                app:layout_constraintEnd_toStartOf="@+id/btnLike"
+                                app:layout_constraintTop_toTopOf="@+id/tvMovieTitle"
+                                app:srcCompat="@drawable/baseline_star_24"
+                                android:clickable="true"
+                                android:focusable="true" />
+
+                            <!-- Like Icon -->
+                            <ImageView
+                                android:id="@+id/btnLike"
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:tint="@android:color/white"
+                                android:contentDescription="Like"
+                                android:scaleType="centerInside"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="@+id/tvMovieTitle"
+                                app:srcCompat="@drawable/baseline_favorite_24"
+                                android:clickable="true"
+                                android:focusable="true" />
+
+                            <!-- Genres RecyclerView -->
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/rvGenres"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="16dp"
+                                android:nestedScrollingEnabled="false"
+                                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@+id/tvMovieTitle"
+                                tools:listitem="@layout/item_genre" />
+
+                            <!-- Year, Duration & Rating Row -->
+                            <TextView
+                                android:id="@+id/tvYearDuration"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="16dp"
+                                android:text="2025 • 1h 55m"
+                                android:textColor="@android:color/white"
+                                android:textSize="12sp"
+                                android:alpha="0.7"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@+id/rvGenres" />
+
+                            <TextView
+                                android:id="@+id/tvImdbRating"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="16dp"
+                                android:text="★4.8"
+                                android:textColor="#FFD700"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toBottomOf="@+id/rvGenres" />
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        <!-- DIVIDER LINE -->
+                        <View
+                            android:id="@+id/divider1"
+                            android:layout_width="0dp"
+                            android:layout_height="0.5dp"
+                            android:layout_marginStart="24dp"
+                            android:layout_marginEnd="24dp"
+                            android:background="#33FFFFFF"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/titleSection" />
+
+                        <!-- ========== SUMMARY SECTION ========== -->
+                        <LinearLayout
+                            android:id="@+id/summarySection"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="24dp"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/divider1">
+
+                            <TextView
+                                android:id="@+id/tvSummaryLabel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Summary"
+                                android:textColor="@android:color/white"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:layout_marginBottom="12dp" />
+
+                            <TextView
+                                android:id="@+id/tvDescription"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Two operatives are appointed to posts in guard stations above and below an enormous chasm."
+                                android:textColor="@android:color/white"
+                                android:textSize="13sp"
+                                android:lineSpacingMultiplier="1.6"
+                                android:alpha="0.85" />
+
+                        </LinearLayout>
+
+                        <!-- DIVIDER LINE 2 -->
+                        <View
+                            android:id="@+id/divider2"
+                            android:layout_width="0dp"
+                            android:layout_height="0.5dp"
+                            android:layout_marginStart="24dp"
+                            android:layout_marginEnd="24dp"
+                            android:background="#33FFFFFF"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/summarySection" />
+
+                        <!-- ========== CAST SECTION ========== -->
+                        <LinearLayout
+                            android:id="@+id/castSection"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="24dp"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/divider2">
+
+                            <TextView
+                                android:id="@+id/tvCastsLabel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Cast"
+                                android:textColor="@android:color/white"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:layout_marginBottom="16dp" />
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/rvCasts"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:nestedScrollingEnabled="false"
+                                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                                tools:listitem="@layout/item_cast" />
+
+                        </LinearLayout>
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </ScrollView>
+
+        <!-- ============ STICKY BUY TICKET BUTTON ============ -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnBuyTicket"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_margin="16dp"
+            android:text="Buy Ticket"
+            android:textColor="#000000"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:backgroundTint="#00CC44"
+            app:cornerRadius="28dp"
+            app:elevation="8dp"
+            android:layout_gravity="bottom"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
