@@ -1,5 +1,7 @@
 package com.example.dacs3_ticket_booking_app.data.model
 
+import java.io.Serializable
+
 data class Movie(
     val id: String = "",
     val title: String = "",
@@ -12,4 +14,4 @@ data class Movie(
     val releaseDate: String = "",
     val genres: List<String> = emptyList(),
     val casts: List<Cast> = emptyList(),
-)
+) : Serializable

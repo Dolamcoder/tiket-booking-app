@@ -1,10 +1,11 @@
 package com.example.dacs3_ticket_booking_app.ui.view
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -12,26 +13,24 @@ import com.example.dacs3_ticket_booking_app.R
 import com.example.dacs3_ticket_booking_app.databinding.ActivityDetailMovieBinding
 import com.example.dacs3_ticket_booking_app.ui.view.adapter.CastAdapter
 import com.example.dacs3_ticket_booking_app.ui.view.adapter.GenreAdapter
+import com.example.dacs3_ticket_booking_app.ui.view.client.SeatListActivity
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.MovieViewModel
-import kotlin.math.roundToInt
 
 class DetailMovieActivity : AppCompatActivity() {
     private lateinit var binding: ActivityDetailMovieBinding
     private lateinit var viewModel: MovieViewModel
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         binding = ActivityDetailMovieBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
+        window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                )
         // Initialize ViewModel
         viewModel = ViewModelProvider(this).get(MovieViewModel::class.java)
 
@@ -52,7 +51,6 @@ class DetailMovieActivity : AppCompatActivity() {
             if (movie != null) {
                 // Set title
                 binding.tvMovieTitle.text = movie.title
-
                 // Set poster image
                 if (movie.poster.isNotEmpty()) {
                     Glide.with(this)
@@ -88,7 +86,9 @@ class DetailMovieActivity : AppCompatActivity() {
 
                 // Set buy ticket button
                 binding.btnBuyTicket.setOnClickListener {
-                    // TODO: Navigate to booking screen
+                    val intent = Intent(this, SeatListActivity::class.java)
+                    intent.putExtra("movie", movie)
+                    startActivity(intent)
                 }
             }
         }

@@ -15,6 +15,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Dacs3ticketbookingapp">
         <activity
+            android:name=".ui.view.client.SeatListActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.view.DetailMovieActivity"
             android:exported="false" />
         <activity
@@ -28,7 +31,7 @@
         </activity>
         <activity
             android:name=".ui.view.MainActivity"
-            android:exported="true"></activity>
+            android:exported="true" />
     </application>
 
 </manifest>
