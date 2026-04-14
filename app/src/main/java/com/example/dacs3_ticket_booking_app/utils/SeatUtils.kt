@@ -64,26 +64,6 @@ object SeatUtils {
         return allCells
     }
 
-    /**
-     * Before 12:00 -> "morning"
-     * 12:00 - 18:00 -> "afternoon"
-     * After 18:00 -> "evening"
-     */
-    fun getPriceTier(startTimeMillis: Long): String {
-        val cal = java.util.Calendar.getInstance().apply { timeInMillis = startTimeMillis }
-        return when (cal.get(java.util.Calendar.HOUR_OF_DAY)) {
-            in 0..11 -> "morning"
-            in 12..17 -> "afternoon"
-            else -> "evening"
-        }
-    }
-
-    fun priceTierLabel(tier: String): String = when (tier) {
-        "morning" -> "Sáng"
-        "afternoon" -> "Chiều"
-        "evening" -> "Tối"
-        else -> tier
-    }
 
     /**
      * Build a flat list of Seat UI items from a Room's seatLayout matrix
@@ -106,5 +86,13 @@ object SeatUtils {
             }
         }
         return cells
+    }
+
+    // ✅ Hàm label cho priceTier (dùng cho hiển thị)
+    fun priceTierLabel(tier: String): String = when (tier) {
+        "morning" -> "Sáng"
+        "afternoon" -> "Chiều"
+        "evening" -> "Tối"
+        else -> tier
     }
 }

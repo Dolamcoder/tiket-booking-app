@@ -16,6 +16,7 @@ import com.example.dacs3_ticket_booking_app.ui.view.adapter.SeatAdapter
 import com.example.dacs3_ticket_booking_app.ui.view.adapter.TimeAdapter
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.RoomViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.ShowtimeViewModel
+import com.example.dacs3_ticket_booking_app.utils.PriceManager
 import com.example.dacs3_ticket_booking_app.utils.SeatUtils
 
 class SeatListActivity : AppCompatActivity() {
@@ -27,6 +28,7 @@ class SeatListActivity : AppCompatActivity() {
     private var selectedScreeningDate: String = ""
     private var selectedTimeSlot: String = ""
     private var selectedRoom: Room? = null
+    private var selectedPriceTier: String = "morning"  // ✅ Lưu priceTier từ showtime
     private var price: Double = 0.0
     private var selectedSeatCount: Int = 0
 
@@ -60,6 +62,14 @@ class SeatListActivity : AppCompatActivity() {
 
     private fun backOnClick() {
         binding.backBtn.setOnClickListener { finish() }
+        // ✅ Xử lý click nút "Tải Vé"
+        binding.btnBooking.setOnClickListener {
+            if (selectedSeatCount == 0) {
+                android.widget.Toast.makeText(this, "Vui lòng chọn ít nhất 1 ghế", android.widget.Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            bookSeats()
+        }
     }
 
     // 📅 Load danh sách ngày chiếu từ Firebase
@@ -152,6 +162,8 @@ class SeatListActivity : AppCompatActivity() {
         }
         
         if (selectedShowtime != null) {
+            // ✅ Lưu priceTier từ showtime
+            selectedPriceTier = selectedShowtime.priceTier
             showtimeViewModel.selectShowtime(selectedShowtime)
         } else {
             android.widget.Toast.makeText(this, "Không tìm thấy suất chiếu", android.widget.Toast.LENGTH_SHORT).show()
@@ -169,6 +181,10 @@ class SeatListActivity : AppCompatActivity() {
         // Tạo map position -> name để SeatAdapter sử dụng (A1-A8, không lối đi)
         val seatNameMap = seatCells.associate { it.position to it.name }
         
+        // ✅ Hiển thị giá vé theo priceTier
+        val unitPrice = PriceManager.getPrice(selectedPriceTier)
+        binding.priceTxt.text = "Giá: ${PriceManager.getPriceLabel(selectedPriceTier)}/ghế"
+        
         // Setup GridLayoutManager với 8 cột cố định (không aisle)
         val gridLayoutManager = GridLayoutManager(this, 8)
         gridLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
@@ -184,13 +200,29 @@ class SeatListActivity : AppCompatActivity() {
                 override fun Return(selectedName: String, num: Int) {
                     selectedSeatCount = num
                     binding.numberSelectedTxt.text = "$num Ghế Được Chọn"
-                    val df = DecimalFormat("#.##")
-                    price = df.format(100000.0 * num).toDouble() // Giá mỗi ghế 100k
-                    binding.priceTxt.text = "$price đ"
+                    // ✅ Tính giá theo priceTier
+                    price = PriceManager.calculateTotal(selectedPriceTier, num)
+                    binding.priceTxt.text = "Tổng: ${PriceManager.formatPrice(price)}"
                 }
             },
             seatNameMap  // Truyền map A1-A8
         )
     }
-}
 
+    // ✅ Xử lý đặt vé
+    private fun bookSeats() {
+        if (selectedSeatCount == 0) {
+            android.widget.Toast.makeText(this, "Vui lòng chọn ghế", android.widget.Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        android.widget.Toast.makeText(
+            this, 
+            "Đã đặt $selectedSeatCount ghế - Tổng: ${PriceManager.formatPrice(price)}", 
+            android.widget.Toast.LENGTH_SHORT
+        ).show()
+        
+        // TODO: Gọi API để lưu vé vào database
+        // Hiện tại chỉ hiển thị toast, sau sẽ thêm logic gửi dữ liệu
+    }
+}

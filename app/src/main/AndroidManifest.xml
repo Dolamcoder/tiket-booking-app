@@ -63,7 +63,7 @@
             android:name=".ui.view.admin.AdminShowtimeFormActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.view.admin.AdminTicketListActivity"
+            android:name=".ui.view.admin.AdminBillListActivity"
             android:exported="false" />
         <activity
             android:name=".ui.view.admin.AdminUserListActivity"

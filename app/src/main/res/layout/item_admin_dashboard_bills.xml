@@ -24,7 +24,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Quản lý Vé"
+            android:text="Bill Management"
             android:textColor="@color/admin_text_primary"
             android:textStyle="bold"
             android:textSize="16sp" />
@@ -32,7 +32,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Xem và hủy vé đã đặt"
+            android:text="View and cancel bills"
             android:textColor="@color/admin_text_secondary"
             android:textSize="12sp" />
     </LinearLayout>
@@ -43,3 +43,4 @@
         android:src="@android:drawable/ic_media_next"
         android:tint="@color/admin_text_secondary" />
 </LinearLayout>
+

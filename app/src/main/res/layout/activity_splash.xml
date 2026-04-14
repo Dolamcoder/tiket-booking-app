@@ -56,7 +56,7 @@
                 android:id="@+id/textView5"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Discover and book the best movie tickets in your city with our app"
+                android:text="Discover and book the best movie bills in your city with our app"
                 android:textSize="20sp"
                 android:textColor="@color/white"
                 android:textAlignment="center"

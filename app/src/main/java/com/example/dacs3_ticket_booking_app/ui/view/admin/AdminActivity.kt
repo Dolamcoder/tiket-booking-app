@@ -49,7 +49,7 @@ class AdminActivity : AppCompatActivity() {
             startActivity(Intent(this, AdminShowtimeListActivity::class.java))
         }
         binding.cardTickets.setOnClickListener {
-            startActivity(Intent(this, AdminTicketListActivity::class.java))
+            startActivity(Intent(this, AdminBillListActivity::class.java))
         }
         binding.cardUsers.setOnClickListener {
             startActivity(Intent(this, AdminUserListActivity::class.java))

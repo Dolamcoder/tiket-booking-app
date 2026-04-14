@@ -2,7 +2,7 @@ package com.example.dacs3_ticket_booking_app.data.model
 
 import java.io.Serializable
 
-data class Ticket(
+data class Bill(
     var id: String = "",
     var userId: String = "",
     var showtimeId: String = "",

@@ -15,7 +15,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Row 1: Ticket ID and Status -->
+        <!-- Row 1: Bill ID and Status -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -24,11 +24,11 @@
             android:layout_marginBottom="8dp">
 
             <TextView
-                android:id="@+id/tvTicketId"
+                android:id="@+id/tvBillId"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Vé #ABC123"
+                android:text="Bill #ABC123"
                 android:textColor="@color/admin_text_primary"
                 android:textStyle="bold"
                 android:textSize="16sp" />
@@ -88,7 +88,7 @@
             android:id="@+id/btnCancel"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:text="Hủy Vé"
+            android:text="Cancel Bill"
             android:textColor="@color/admin_text_primary"
             android:textStyle="bold"
             android:background="@drawable/admin_button_danger"
@@ -98,4 +98,5 @@
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>
+
 

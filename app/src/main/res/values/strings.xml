@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">dacs3-ticket-booking-app</string>
-    <string name="cinema_ticket_booking">Cinema Ticket Booking</string>
+    <string name="app_name">dacs3-bill-booking-app</string>
+    <string name="cinema_ticket_booking">Cinema Bill Booking</string>
 
     <!-- Common -->
     <string name="back">Quay lại</string>

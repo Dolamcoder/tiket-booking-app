@@ -4,15 +4,15 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.dacs3_ticket_booking_app.data.model.Ticket
-import com.example.dacs3_ticket_booking_app.data.repository.TicketRepository
+import com.example.dacs3_ticket_booking_app.data.model.Bill
+import com.example.dacs3_ticket_booking_app.data.repository.BillRepository
 import kotlinx.coroutines.launch
 
-class TicketViewModel : ViewModel() {
-    private val ticketRepository = TicketRepository()
+class BillViewModel : ViewModel() {
+    private val billRepository = BillRepository()
 
-    private val _tickets = MutableLiveData<List<Ticket>>()
-    val tickets: LiveData<List<Ticket>> = _tickets
+    private val _bills = MutableLiveData<List<Bill>>()
+    val bills: LiveData<List<Bill>> = _bills
 
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
@@ -23,92 +23,92 @@ class TicketViewModel : ViewModel() {
     private val _successMessage = MutableLiveData<String>()
     val successMessage: LiveData<String> = _successMessage
 
-    fun getAllTickets() {
+    fun getAllBills() {
         _isLoading.value = true
         viewModelScope.launch {
-            val result = ticketRepository.getAllTickets()
+            val result = billRepository.getAllBills()
             result.onSuccess { list ->
-                _tickets.value = list
+                _bills.value = list
                 _isLoading.value = false
             }
             result.onFailure { e ->
-                _errorMessage.value = "Lỗi tải danh sách vé: ${e.message}"
+                _errorMessage.value = "Error loading bills: ${e.message}"
                 _isLoading.value = false
             }
         }
     }
 
-    fun getTicketsByUser(userId: String) {
+    fun getBillsByUser(userId: String) {
         _isLoading.value = true
         viewModelScope.launch {
-            val result = ticketRepository.getTicketsByUser(userId)
+            val result = billRepository.getBillsByUser(userId)
             result.onSuccess { list ->
-                _tickets.value = list
+                _bills.value = list
                 _isLoading.value = false
             }
             result.onFailure { e ->
-                _errorMessage.value = "Lỗi tải vé: ${e.message}"
+                _errorMessage.value = "Error loading bills: ${e.message}"
                 _isLoading.value = false
             }
         }
     }
 
-    fun getTicketsByShowtime(showtimeId: String) {
+    fun getBillsByShowtime(showtimeId: String) {
         _isLoading.value = true
         viewModelScope.launch {
-            val result = ticketRepository.getTicketsByShowtime(showtimeId)
+            val result = billRepository.getBillsByShowtime(showtimeId)
             result.onSuccess { list ->
-                _tickets.value = list
+                _bills.value = list
                 _isLoading.value = false
             }
             result.onFailure { e ->
-                _errorMessage.value = "Lỗi tải vé: ${e.message}"
+                _errorMessage.value = "Error loading bills: ${e.message}"
                 _isLoading.value = false
             }
         }
     }
 
-    fun addTicket(ticket: Ticket) {
+    fun addBill(bill: Bill) {
         _isLoading.value = true
         viewModelScope.launch {
-            val result = ticketRepository.addTicket(ticket)
+            val result = billRepository.addBill(bill)
             result.onSuccess { id ->
-                _successMessage.value = "Đặt vé thành công (ID: $id)"
+                _successMessage.value = "Bill created successfully (ID: $id)"
                 _isLoading.value = false
             }
             result.onFailure { e ->
-                _errorMessage.value = "Lỗi đặt vé: ${e.message}"
+                _errorMessage.value = "Error creating bill: ${e.message}"
                 _isLoading.value = false
             }
         }
     }
 
-    fun cancelTicket(ticketId: String) {
+    fun cancelBill(billId: String) {
         _isLoading.value = true
         viewModelScope.launch {
-            val result = ticketRepository.updateTicketStatus(ticketId, "cancelled")
+            val result = billRepository.updateBillStatus(billId, "cancelled")
             result.onSuccess {
-                _successMessage.value = "Đã hủy vé"
+                _successMessage.value = "Bill cancelled successfully"
                 _isLoading.value = false
-                getAllTickets()
+                getAllBills()
             }
             result.onFailure { e ->
-                _errorMessage.value = "Lỗi hủy vé: ${e.message}"
+                _errorMessage.value = "Error cancelling bill: ${e.message}"
                 _isLoading.value = false
             }
         }
     }
 
-    fun getTicketsByMovie(movieId: String) {
+    fun getBillsByMovie(movieId: String) {
         _isLoading.value = true
         viewModelScope.launch {
-            val result = ticketRepository.getTicketsByMovie(movieId)
+            val result = billRepository.getBillsByMovie(movieId)
             result.onSuccess { list ->
-                _tickets.value = list
+                _bills.value = list
                 _isLoading.value = false
             }
             result.onFailure { e ->
-                _errorMessage.value = "Lỗi tải vé: ${e.message}"
+                _errorMessage.value = "Error loading bills: ${e.message}"
                 _isLoading.value = false
             }
         }

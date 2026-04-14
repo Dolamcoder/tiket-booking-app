@@ -143,41 +143,46 @@
                 android:layout_height="match_parent"
                 android:layout_marginHorizontal="16dp"
                 android:layout_marginTop="8dp"
-                android:layout_marginBottom="3dp">
-
-                <TextView
-                    android:id="@+id/priceTxt"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="$0"
-                    android:textColor="@color/white"
-                    android:textSize="25sp"
-                    android:textStyle="bold"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <androidx.appcompat.widget.AppCompatButton
-                    android:id="@+id/button"
-                    android:layout_width="200dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginVertical="8dp"
-                    android:background="@drawable/green_bg"
-                    android:text="Download Ticket"
-                    android:textColor="@color/white"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                android:layout_marginBottom="16dp">
 
                 <TextView
                     android:id="@+id/numberSelectedTxt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="0 Seat Selected"
+                    android:text="0 Ghế Được Chọn"
                     android:textColor="@color/grey"
                     android:textStyle="bold"
+                    android:textSize="14sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-                    app:layout_constraintBottom_toBottomOf="parent"
+                <TextView
+                    android:id="@+id/priceTxt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Giá: 100.000 đ"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/numberSelectedTxt"
+                    android:layout_marginTop="8dp" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnBooking"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginVertical="8dp"
+                    android:background="@drawable/green_bg"
+                    android:text="Thanh Toán"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:layout_constraintTop_toBottomOf="@id/priceTxt"
+                    android:layout_marginTop="16dp"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent" />
+
             </androidx.constraintlayout.widget.ConstraintLayout>
         </LinearLayout>
     </ScrollView>

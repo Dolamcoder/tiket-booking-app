@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="@drawable/admin_bg">
 
-    <!-- Header -->
     <LinearLayout
         android:id="@+id/header"
         android:layout_width="match_parent"
@@ -29,19 +28,17 @@
             android:clickable="true"
             android:focusable="true" />
 
-
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Quản lý Vé"
+            android:text="Bill Management"
             android:textColor="@color/admin_text_primary"
             android:textStyle="bold"
             android:textSize="20sp"
             android:layout_marginStart="8dp" />
     </LinearLayout>
 
-    <!-- Progress Bar -->
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
@@ -49,9 +46,8 @@
         android:layout_gravity="center"
         android:visibility="gone" />
 
-    <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewTickets"
+        android:id="@+id/recyclerViewBills"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="88dp"
@@ -59,4 +55,3 @@
         android:clipToPadding="false" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
-

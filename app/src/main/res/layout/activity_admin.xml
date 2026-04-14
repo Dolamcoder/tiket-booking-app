@@ -89,7 +89,7 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="4dp">
 
-                <include layout="@layout/item_admin_dashboard_tickets" />
+                <include layout="@layout/item_admin_dashboard_bills" />
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
