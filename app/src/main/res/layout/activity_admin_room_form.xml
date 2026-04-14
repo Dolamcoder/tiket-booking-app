@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/admin_bg">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@color/admin_header"
+        android:padding="16dp"
+        android:paddingTop="36dp">
+
+        <ImageButton
+            android:id="@+id/backBtn"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@android:drawable/ic_media_previous"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:tint="@color/admin_text_primary" />
+
+        <TextView
+            android:id="@+id/titleBar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Thêm phòng chiếu"
+            android:textColor="@color/admin_text_primary"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Tên phòng -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tên phòng chiếu *"
+                android:textColor="@color/admin_text_secondary"
+                android:textSize="13sp"
+                android:layout_marginBottom="6dp" />
+
+            <EditText
+                android:id="@+id/etRoomName"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="Ví dụ: Phòng A1"
+                android:textColorHint="@color/admin_text_secondary"
+                android:textColor="@color/admin_text_primary"
+                android:background="@drawable/admin_input_bg"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:inputType="text"
+                android:layout_marginBottom="14dp" />
+
+            <!-- Row: Số dòng + Số cột -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="14dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginEnd="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Số dòng (hàng) *"
+                        android:textColor="@color/admin_text_secondary"
+                        android:textSize="13sp"
+                        android:layout_marginBottom="6dp" />
+
+                    <EditText
+                        android:id="@+id/etRowCount"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:hint="8"
+                        android:textColorHint="@color/admin_text_secondary"
+                        android:textColor="@color/admin_text_primary"
+                        android:background="@drawable/admin_input_bg"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        android:inputType="number" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Số cột *"
+                        android:textColor="@color/admin_text_secondary"
+                        android:textSize="13sp"
+                        android:layout_marginBottom="6dp" />
+
+                    <EditText
+                        android:id="@+id/etColCount"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:hint="10"
+                        android:textColorHint="@color/admin_text_secondary"
+                        android:textColor="@color/admin_text_primary"
+                        android:background="@drawable/admin_input_bg"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        android:inputType="number" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Button tạo layout tự động -->
+            <Button
+                android:id="@+id/btnGenerateLayout"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="⚙️  Tạo sơ đồ ghế tự động"
+                android:textColor="@color/admin_text_primary"
+                android:background="@drawable/admin_button_secondary"
+                android:layout_marginBottom="14dp" />
+
+            <!-- Seat layout editor -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sơ đồ ghế (1 = ghế, 0 = lối đi)"
+                android:textColor="@color/admin_text_secondary"
+                android:textSize="13sp"
+                android:layout_marginBottom="6dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mỗi dòng là 1 hàng ghế. VD: 111011"
+                android:textColor="@color/admin_text_secondary"
+                android:textSize="11sp"
+                android:layout_marginBottom="6dp" />
+
+            <EditText
+                android:id="@+id/etSeatLayout"
+                android:layout_width="match_parent"
+                android:layout_height="160dp"
+                android:hint="111011&#10;111011&#10;111011"
+                android:textColorHint="@color/admin_text_secondary"
+                android:textColor="@color/admin_text_primary"
+                android:background="@drawable/admin_input_bg"
+                android:padding="14dp"
+                android:gravity="top"
+                android:inputType="textMultiLine"
+                android:fontFamily="monospace"
+                android:layout_marginBottom="20dp" />
+
+            <!-- Save button -->
+            <Button
+                android:id="@+id/btnSave"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Lưu phòng chiếu"
+                android:textColor="@color/admin_text_primary"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:background="@drawable/admin_button_primary"
+                android:layout_marginBottom="32dp" />
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

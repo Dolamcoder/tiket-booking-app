@@ -3,15 +3,17 @@ package com.example.dacs3_ticket_booking_app.data.model
 import java.io.Serializable
 
 data class Movie(
-    val id: String = "",
-    val title: String = "",
-    val description: String = "",
-    val poster: String = "",
-    val trailer: String = "",
-    val duration: Int = 0,
-    val status: String = "coming_soon", // now_showing | coming_soon | ended
-    val year: Int = 0,
-    val releaseDate: String = "",
-    val genres: List<String> = emptyList(),
-    val casts: List<Cast> = emptyList(),
+   var id: String = "",
+    var title: String = "",
+    var description: String = "",
+    var poster: String = "",
+    var trailer: String = "",
+    var duration: Int = 0,
+    var status: String = "coming_soon", // now_showing | coming_soon | ended
+    var year: Int = 0,
+    var releaseDate: String = "",
+    var genres: List<String> = emptyList(),
+    var casts: List<Cast> = emptyList(),
+    var ticketsSold: Int = 0,           // Số vé đã bán
+    var totalRevenue: Double = 0.0,     // Tổng doanh thu
 ) : Serializable

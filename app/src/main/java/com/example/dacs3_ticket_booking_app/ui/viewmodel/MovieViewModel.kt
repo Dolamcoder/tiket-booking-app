@@ -159,5 +159,72 @@ class MovieViewModel : ViewModel() {
             }
         }
     }
-}
 
+    // 🔍 Tìm kiếm phim theo tiêu đề
+    fun searchMoviesByTitle(query: String) {
+        val currentMovies = _movies.value ?: return
+        val filtered = movieRepository.searchMoviesByTitle(currentMovies, query)
+        _movies.value = filtered
+    }
+
+    // 📊 Sắp xếp phim theo tên
+    fun sortMoviesByTitle(ascending: Boolean = true) {
+        val currentMovies = _movies.value ?: return
+        val sorted = movieRepository.sortMoviesByTitle(currentMovies, ascending)
+        _movies.value = sorted
+    }
+
+    // 📊 Sắp xếp phim theo năm
+    fun sortMoviesByYear(ascending: Boolean = false) {
+        val currentMovies = _movies.value ?: return
+        val sorted = movieRepository.sortMoviesByYear(currentMovies, ascending)
+        _movies.value = sorted
+    }
+
+    // 📊 Sắp xếp phim theo thời lượng
+    fun sortMoviesByDuration(ascending: Boolean = true) {
+        val currentMovies = _movies.value ?: return
+        val sorted = movieRepository.sortMoviesByDuration(currentMovies, ascending)
+        _movies.value = sorted
+    }
+
+    // 📊 Cập nhật số lượng vé bán cho phim
+    fun updateTicketsSold(movieId: String, quantity: Int) {
+        viewModelScope.launch {
+            val result = movieRepository.updateTicketsSold(movieId, quantity)
+            result.onSuccess {
+                getAllMovies()
+            }
+            result.onFailure { exception ->
+                _errorMessage.value = "Lỗi cập nhật số vé: ${exception.message}"
+            }
+        }
+    }
+
+    // 💰 Cập nhật doanh thu cho phim
+    fun updateRevenue(movieId: String, revenue: Double) {
+        viewModelScope.launch {
+            val result = movieRepository.updateRevenue(movieId, revenue)
+            result.onSuccess {
+                getAllMovies()
+            }
+            result.onFailure { exception ->
+                _errorMessage.value = "Lỗi cập nhật doanh thu: ${exception.message}"
+            }
+        }
+    }
+
+    // 📊 Sắp xếp phim theo số vé bán (nhiều nhất trước)
+    fun sortMoviesByTicketsSold(descending: Boolean = true) {
+        val currentMovies = _movies.value ?: return
+        val sorted = movieRepository.sortMoviesByTicketsSold(currentMovies, descending)
+        _movies.value = sorted
+    }
+
+    // 📊 Sắp xếp phim theo doanh thu (cao nhất trước)
+    fun sortMoviesByRevenue(descending: Boolean = true) {
+        val currentMovies = _movies.value ?: return
+        val sorted = movieRepository.sortMoviesByRevenue(currentMovies, descending)
+        _movies.value = sorted
+    }
+}

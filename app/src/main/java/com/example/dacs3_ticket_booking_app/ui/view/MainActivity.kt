@@ -1,5 +1,6 @@
 package com.example.dacs3_ticket_booking_app.ui.view
 
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -18,9 +19,11 @@ import com.example.dacs3_ticket_booking_app.R
 import com.example.dacs3_ticket_booking_app.data.model.Banner
 import com.example.dacs3_ticket_booking_app.databinding.ActivityMainBinding
 import com.example.dacs3_ticket_booking_app.ui.view.adaper.MovieAdapter
+import com.example.dacs3_ticket_booking_app.ui.view.client.ProfileActivity
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.BannerViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.MovieViewModel
 import com.example.ticketbookingapp.ui.view.adaper.BannerAdapter
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -30,6 +33,7 @@ class MainActivity : AppCompatActivity() {
     private val sliderRunnable= Runnable{
         binding.viewPager2.currentItem=binding.viewPager2.currentItem+1
     }
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -40,7 +44,36 @@ class MainActivity : AppCompatActivity() {
                         or View.SYSTEM_UI_FLAG_FULLSCREEN
                         or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 )
-        // Initialize both ViewModels first
+        
+        // ✅ Setup ChipNavigationBar
+        binding.chipNavigation.setOnItemSelectedListener(object : com.ismaeldivita.chipnavigation.ChipNavigationBar.OnItemSelectedListener {
+            override fun onItemSelected(id: Int) {
+                when (id) {
+                    R.id.profile -> {
+                        startActivity(Intent(this@MainActivity, ProfileActivity::class.java))
+                    }
+                    R.id.explorer -> {
+                        // TODO: Xử lý Explorer
+                    }
+                    R.id.favorite -> {
+                        // TODO: Xử lý Favorite
+                    }
+                    R.id.cart -> {
+                        // TODO: Xử lý Cart
+                    }
+                }
+            }
+        })
+        
+        // ✅ Hiển thị tên người dùng
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            val userName = currentUser.displayName ?: "User"
+            binding.textView.text = "Hello ${userName.split(" ").lastOrNull() ?: userName}"
+            println("User: $userName")
+        }
+        
+        // ...existing code...
         bannerViewModel = ViewModelProvider(this).get(BannerViewModel::class.java)
         movieViewModel = ViewModelProvider(this).get(MovieViewModel::class.java)
 
@@ -101,6 +134,7 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, successMessage, Toast.LENGTH_SHORT).show()
         }
     }
+    
     private fun banner(lists: List<Banner>) {
         binding.viewPager2.adapter= BannerAdapter(lists.toMutableList(), binding.viewPager2)
         binding.viewPager2.clipToPadding=false

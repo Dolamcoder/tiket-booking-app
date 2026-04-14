@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/admin_bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="28dp"
+            android:paddingTop="20dp">
+
+            <ImageButton
+                android:id="@+id/backBtn"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_arrow_back"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:tint="@color/admin_text_primary"
+                android:contentDescription="@string/back" />
+
+            <TextView
+                android:id="@+id/titleBar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="User Form"
+                android:textColor="@color/admin_text_primary"
+                android:textStyle="bold"
+                android:textSize="22sp"
+                android:layout_marginStart="16dp" />
+        </LinearLayout>
+
+        <!-- Avatar Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_marginBottom="28dp">
+
+            <!-- Avatar Image (clickable to pick) -->
+            <ImageView
+                android:id="@+id/ivUserAvatar"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:src="@drawable/btn_1"
+                android:scaleType="centerCrop"
+                android:contentDescription="@string/user_avatar"
+                android:background="@drawable/admin_icon_circle"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginBottom="12dp"
+                android:elevation="4dp" />
+
+            <!-- Upload progress -->
+            <ProgressBar
+                android:id="@+id/progressUploadAvatar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tvAvatarStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="@color/admin_success"
+                android:textSize="12sp"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+
+        <!-- Full Name -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/full_name"
+            android:textColor="@color/admin_text_primary"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/etFullName"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/admin_input_bg"
+            android:hint="@string/enter_full_name"
+            android:textColorHint="@color/admin_text_secondary"
+            android:textColor="@color/admin_text_primary"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:layout_marginBottom="20dp"
+            android:inputType="text"
+            android:textSize="14sp"
+            android:autofillHints="name" />
+
+        <!-- Email -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/email"
+            android:textColor="@color/admin_text_primary"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/etEmail"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/admin_input_bg"
+            android:hint="@string/email_hint"
+            android:textColorHint="@color/admin_text_secondary"
+            android:textColor="@color/admin_text_primary"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:layout_marginBottom="20dp"
+            android:inputType="textEmailAddress"
+            android:enabled="false"
+            android:textSize="14sp"
+            android:autofillHints="emailAddress" />
+
+        <!-- Password (only for new user) - HIDDEN -->
+        <LinearLayout
+            android:id="@+id/layoutPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone" />
+
+        <!-- Role -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/role"
+            android:textColor="@color/admin_text_primary"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:layout_marginBottom="12dp" />
+
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="24dp">
+
+            <RadioButton
+                android:id="@+id/rbUser"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:text="@string/role_user"
+                android:textColor="@color/admin_text_primary"
+                android:textSize="13sp"
+                android:gravity="center_vertical"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                app:buttonTint="@color/admin_accent"
+                android:layout_marginEnd="8dp" />
+
+            <RadioButton
+                android:id="@+id/rbAdmin"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:text="@string/role_admin"
+                android:textColor="@color/admin_text_primary"
+                android:textSize="13sp"
+                android:gravity="center_vertical"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                app:buttonTint="@color/admin_accent" />
+        </RadioGroup>
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="@string/save"
+            android:textStyle="bold"
+            android:textColor="@color/admin_text_primary"
+            android:textSize="15sp"
+            android:background="@drawable/admin_button_primary"
+            android:layout_marginBottom="12dp"
+            android:stateListAnimator="@animator/button_press" />
+
+        <!-- Delete Button (Hidden) -->
+        <Button
+            android:id="@+id/btnDelete"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="@string/delete"
+            android:textStyle="bold"
+            android:textColor="@color/admin_text_primary"
+            android:textSize="15sp"
+            android:background="@drawable/admin_button_danger"
+            android:visibility="gone"
+            android:stateListAnimator="@animator/button_press" />
+
+    </LinearLayout>
+</ScrollView>
+
+
+
+
+

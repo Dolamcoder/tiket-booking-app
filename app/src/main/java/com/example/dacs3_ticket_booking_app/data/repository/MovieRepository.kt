@@ -106,4 +106,78 @@ class MovieRepository {
             Result.failure(e)
         }
     }
+
+    // 🔍 Tim kiem phim theo tieu de (Client-side filtering)
+    fun searchMoviesByTitle(movies: List<Movie>, query: String): List<Movie> {
+        return movies.filter { it.title.contains(query, ignoreCase = true) }
+    }
+
+    // Sort phim theo ten (A-Z)
+    fun sortMoviesByTitle(movies: List<Movie>, ascending: Boolean = true): List<Movie> {
+        return if (ascending) {
+            movies.sortedBy { it.title }
+        } else {
+            movies.sortedByDescending { it.title }
+        }
+    }
+
+    // Sort phim theo nam phat hanh
+    fun sortMoviesByYear(movies: List<Movie>, ascending: Boolean = false): List<Movie> {
+        return if (ascending) {
+            movies.sortedBy { it.year }
+        } else {
+            movies.sortedByDescending { it.year }
+        }
+    }
+
+    // Sort phim theo thoi luong
+    fun sortMoviesByDuration(movies: List<Movie>, ascending: Boolean = true): List<Movie> {
+        return if (ascending) {
+            movies.sortedBy { it.duration }
+        } else {
+            movies.sortedByDescending { it.duration }
+        }
+    }
+
+    // 📊 Cập nhật số lượng vé bán cho phim
+    suspend fun updateTicketsSold(movieId: String, quantity: Int): Result<Unit> {
+        return try {
+            movieCollection.document(movieId).update(
+                "ticketsSold", com.google.firebase.firestore.FieldValue.increment(quantity.toLong())
+            ).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // 💰 Cập nhật doanh thu cho phim
+    suspend fun updateRevenue(movieId: String, revenue: Double): Result<Unit> {
+        return try {
+            movieCollection.document(movieId).update(
+                "totalRevenue", com.google.firebase.firestore.FieldValue.increment(revenue)
+            ).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // 🔄 Sắp xếp phim theo số vé bán (nhiều nhất trước)
+    fun sortMoviesByTicketsSold(movies: List<Movie>, descending: Boolean = true): List<Movie> {
+        return if (descending) {
+            movies.sortedByDescending { it.ticketsSold }
+        } else {
+            movies.sortedBy { it.ticketsSold }
+        }
+    }
+
+    // 🔄 Sắp xếp phim theo doanh thu (cao nhất trước)
+    fun sortMoviesByRevenue(movies: List<Movie>, descending: Boolean = true): List<Movie> {
+        return if (descending) {
+            movies.sortedByDescending { it.totalRevenue }
+        } else {
+            movies.sortedBy { it.totalRevenue }
+        }
+    }
 }

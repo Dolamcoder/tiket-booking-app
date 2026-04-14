@@ -5,11 +5,17 @@ import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import android.view.View
+import androidx.lifecycle.ViewModelProvider
 import com.example.dacs3_ticket_booking_app.databinding.ActivitySplashBinding
 import com.example.dacs3_ticket_booking_app.ui.view.MainActivity
+import com.example.dacs3_ticket_booking_app.ui.view.admin.AdminActivity
+import com.example.dacs3_ticket_booking_app.ui.view.auth.LoginActivity
+import com.example.dacs3_ticket_booking_app.ui.viewmodel.SplashViewModel
 
 class SplashActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySplashBinding
+    private lateinit var splashViewModel: SplashViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -20,9 +26,28 @@ class SplashActivity : AppCompatActivity() {
                         or View.SYSTEM_UI_FLAG_FULLSCREEN
                         or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 )
-        // Initialize mock database
+        
+        splashViewModel = ViewModelProvider(this).get(SplashViewModel::class.java)
+        
+        // ✅ Observe navigation event
+        splashViewModel.navigationEvent.observe(this) { destination ->
+            when (destination) {
+                "admin" -> {
+                    startActivity(Intent(this, AdminActivity::class.java))
+                }
+                "user" -> {
+                    startActivity(Intent(this, MainActivity::class.java))
+                }
+                "login" -> {
+                    startActivity(Intent(this, LoginActivity::class.java))
+                }
+            }
+            finish()
+        }
+        
+        // ✅ Check user and navigate
         binding.startBtn.setOnClickListener {
-            startActivity(Intent(this, MainActivity::class.java))
+            splashViewModel.checkUserAndNavigate(this)
         }
     }
 }

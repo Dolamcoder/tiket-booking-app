@@ -1,73 +1,196 @@
 package com.example.dacs3_ticket_booking_app.ui.view.client
 
+import android.icu.text.DecimalFormat
 import android.os.Bundle
-import android.view.View.*
+import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dacs3_ticket_booking_app.data.model.Movie
+import com.example.dacs3_ticket_booking_app.data.model.Room
 import com.example.dacs3_ticket_booking_app.databinding.ActivitySeatListBinding
 import com.example.dacs3_ticket_booking_app.ui.view.adapter.DateAdapter
+import com.example.dacs3_ticket_booking_app.ui.view.adapter.SeatAdapter
 import com.example.dacs3_ticket_booking_app.ui.view.adapter.TimeAdapter
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import com.example.dacs3_ticket_booking_app.ui.viewmodel.RoomViewModel
+import com.example.dacs3_ticket_booking_app.ui.viewmodel.ShowtimeViewModel
+import com.example.dacs3_ticket_booking_app.utils.SeatUtils
 
 class SeatListActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySeatListBinding
     private lateinit var movie: Movie
-    private var price:Double=0.0
-    private var number:Int=0
+    private lateinit var showtimeViewModel: ShowtimeViewModel
+    private lateinit var roomViewModel: RoomViewModel
+    
+    private var selectedScreeningDate: String = ""
+    private var selectedTimeSlot: String = ""
+    private var selectedRoom: Room? = null
+    private var price: Double = 0.0
+    private var selectedSeatCount: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        binding= ActivitySeatListBinding.inflate(layoutInflater)
+        binding = ActivitySeatListBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
         window.decorView.systemUiVisibility = (
-                SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                        or SYSTEM_UI_FLAG_FULLSCREEN
-                        or SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                )
+            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    or View.SYSTEM_UI_FLAG_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+        )
+
         getIntentExtra()
-        backOnclick()
-        initTimeDateList()
+        setupViewModels()
+        backOnClick()
+        loadScreeningDates()
+        observeViewModel()
     }
-    private fun backOnclick(){
-        binding.backBtn.setOnClickListener(){
-            finish()
-        }
-    }
-    private fun getIntentExtra(){
-        movie=intent.getSerializableExtra("movie") as Movie
 
+    private fun getIntentExtra() {
+        movie = intent.getSerializableExtra("movie") as Movie
     }
-    private fun initTimeDateList(){
-        binding.apply{
-            dateRecyclerView.layoutManager=
-                LinearLayoutManager(this@SeatListActivity, LinearLayoutManager.HORIZONTAL, false)
-                dateRecyclerView.adapter= DateAdapter(generateDates())
-            timeRecyclerView.layoutManager=
-                LinearLayoutManager(this@SeatListActivity, LinearLayoutManager.HORIZONTAL, false)
-            timeRecyclerView.adapter= TimeAdapter(generateTimes())
 
+    private fun setupViewModels() {
+        showtimeViewModel = ViewModelProvider(this).get(ShowtimeViewModel::class.java)
+        roomViewModel = ViewModelProvider(this).get(RoomViewModel::class.java)
+    }
+
+    private fun backOnClick() {
+        binding.backBtn.setOnClickListener { finish() }
+    }
+
+    // 📅 Load danh sách ngày chiếu từ Firebase
+    private fun loadScreeningDates() {
+        binding.apply {
+            dateRecyclerView.visibility = View.VISIBLE
+            timeRecyclerView.visibility = View.GONE
+            seatRecylerView.visibility = View.GONE
+        }
+        
+        showtimeViewModel.loadScreeningDates(movie.id)
+    }
+
+    private fun observeViewModel() {
+        // Theo dõi danh sách ngày chiếu
+        showtimeViewModel.screeningDates.observe(this) { dates ->
+            android.util.Log.d("SeatListActivity", "✅ Loaded ${dates.size} screening dates")
+            binding.dateRecyclerView.layoutManager = 
+                LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+            binding.dateRecyclerView.adapter = DateAdapter(dates) { selectedDate ->
+                onDateSelected(selectedDate)
+            }
+        }
+
+        // Theo dõi danh sách khung giờ
+        showtimeViewModel.timeSlots.observe(this) { slots ->
+            android.util.Log.d("SeatListActivity", "✅ Loaded ${slots.size} time slots")
+            binding.apply {
+                timeRecyclerView.visibility = View.VISIBLE
+            }
+            binding.timeRecyclerView.layoutManager = 
+                LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+            binding.timeRecyclerView.adapter = TimeAdapter(slots) { selectedSlot ->
+                onTimeSlotSelected(selectedSlot)
+            }
+        }
+
+        // Theo dõi suất chiếu được chọn
+        showtimeViewModel.selectedShowtime.observe(this) { showtime ->
+            android.util.Log.d("SeatListActivity", "✅ Selected showtime: ${showtime?.id}")
+            if (showtime != null) {
+                loadSeatLayout(showtime.roomId)
+            }
+        }
+
+        // Theo dõi phòng chiếu
+        roomViewModel.roomDetail.observe(this) { room ->
+            android.util.Log.d("SeatListActivity", "✅ Loaded room: ${room?.name}")
+            if (room != null) {
+                selectedRoom = room
+                displaySeatLayout(room)
+            }
+        }
+
+        showtimeViewModel.isLoading.observe(this) { isLoading ->
+            // TODO: Add ProgressBar to layout if needed
+            // binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        }
+
+        showtimeViewModel.errorMessage.observe(this) { msg ->
+            android.util.Log.e("SeatListActivity", "❌ Error: $msg")
+            android.widget.Toast.makeText(this, msg, android.widget.Toast.LENGTH_SHORT).show()
         }
     }
-    private fun generateDates(): List<String> {
-        val dates = mutableListOf<String>()
-        val today= LocalDate.now()
-        val formatter= DateTimeFormatter.ofPattern("EEE/dd/MMM")
-        for(i in 0 until 7){
-            dates.add(today.plusDays(i.toLong()).format(formatter))
+
+    private fun onDateSelected(screeningDate: String) {
+        selectedScreeningDate = screeningDate
+        binding.apply {
+            seatRecylerView.visibility = View.GONE
         }
-        return dates
+        // Load khung giờ cho ngày được chọn
+        showtimeViewModel.loadTimeSlots(movie.id, screeningDate)
     }
-    private fun generateTimes(): List<String> {
-        val timeSlots=mutableListOf<String>()
-        val formatter= DateTimeFormatter.ofPattern("hh:mm a")
-        for(i in 0 until 24 step 2){
-            val time= LocalDate.now().atTime(i,0)
-            timeSlots.add(time.format(formatter))
+
+    private fun onTimeSlotSelected(timeSlot: String) {
+        selectedTimeSlot = timeSlot
+        binding.apply {
+            seatRecylerView.visibility = View.VISIBLE
         }
-        return timeSlots
+        
+        // Load suất chiếu & phòng chiếu từ danh sách suất chiếu đã load
+        val showtimes = showtimeViewModel.showtimes.value ?: emptyList()
+        if (showtimes.isEmpty()) {
+            android.widget.Toast.makeText(this, "Chưa tải được suất chiếu", android.widget.Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        val selectedShowtime = showtimes.find { 
+            it.screeningDate == selectedScreeningDate && it.timeSlot == selectedTimeSlot && it.movieId == movie.id
+        }
+        
+        if (selectedShowtime != null) {
+            showtimeViewModel.selectShowtime(selectedShowtime)
+        } else {
+            android.widget.Toast.makeText(this, "Không tìm thấy suất chiếu", android.widget.Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun loadSeatLayout(roomId: String) {
+        roomViewModel.getRoomById(roomId)
+    }
+
+    private fun displaySeatLayout(room: Room) {
+        // Build seat grid từ room layout (chỉ 8 cột, không có lối đi)
+        val seatCells = SeatUtils.buildSeatGridFromRoom(room.seatLayout)
+        
+        // Tạo map position -> name để SeatAdapter sử dụng (A1-A8, không lối đi)
+        val seatNameMap = seatCells.associate { it.position to it.name }
+        
+        // Setup GridLayoutManager với 8 cột cố định (không aisle)
+        val gridLayoutManager = GridLayoutManager(this, 8)
+        gridLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+            override fun getSpanSize(position: Int): Int {
+                return 1
+            }
+        }
+        
+        binding.seatRecylerView.layoutManager = gridLayoutManager
+        binding.seatRecylerView.adapter = SeatAdapter(
+            seatCells.map { it.position },
+            object : SeatAdapter.SelectedSeat {
+                override fun Return(selectedName: String, num: Int) {
+                    selectedSeatCount = num
+                    binding.numberSelectedTxt.text = "$num Ghế Được Chọn"
+                    val df = DecimalFormat("#.##")
+                    price = df.format(100000.0 * num).toDouble() // Giá mỗi ghế 100k
+                    binding.priceTxt.text = "$price đ"
+                }
+            },
+            seatNameMap  // Truyền map A1-A8
+        )
     }
 }
+

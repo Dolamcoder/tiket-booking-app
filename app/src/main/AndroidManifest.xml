@@ -32,6 +32,57 @@
         <activity
             android:name=".ui.view.MainActivity"
             android:exported="true" />
+        <activity
+            android:name=".ui.view.admin.AdminActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.admin.AdminMovieListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.admin.AdminMovieFormActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.admin.AdminMovieDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.admin.AdminRoomListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.admin.AdminRoomDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.admin.AdminRoomFormActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.admin.AdminShowtimeListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.admin.AdminShowtimeDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.admin.AdminShowtimeFormActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.admin.AdminTicketListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.admin.AdminUserListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.admin.AdminUserFormActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.admin.AdminRevenueActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.auth.LoginActivity"
+            android:exported="true" />
+        <activity
+            android:name=".ui.view.auth.RegisterActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.client.ProfileActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

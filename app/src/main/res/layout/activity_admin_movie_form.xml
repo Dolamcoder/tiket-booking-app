@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/admin_bg">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@color/admin_header"
+        android:padding="16dp"
+        android:paddingTop="36dp">
+
+        <ImageButton
+            android:id="@+id/backBtn"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@android:drawable/ic_media_previous"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:tint="@color/admin_text_primary" />
+
+        <TextView
+            android:id="@+id/titleBar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Thêm phim"
+            android:textColor="@color/admin_text_primary"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <!-- Scrollable form content -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Poster preview -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="120dp"
+                android:layout_height="170dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
+
+                <ImageView
+                    android:id="@+id/posterPreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@android:drawable/ic_menu_gallery" />
+            </androidx.cardview.widget.CardView>
+
+            <Button
+                android:id="@+id/btnPickImage"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="20dp"
+                android:text="Chọn ảnh poster"
+                android:textSize="13sp"
+                android:textColor="@color/admin_text_primary"
+                android:background="@drawable/admin_button_secondary" />
+
+            <!-- Tên phim -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tên phim *"
+                android:textColor="@color/admin_text_secondary"
+                android:textSize="13sp"
+                android:layout_marginBottom="6dp" />
+
+            <EditText
+                android:id="@+id/etTitle"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="Nhập tên phim"
+                android:textColorHint="@color/admin_text_secondary"
+                android:textColor="@color/admin_text_primary"
+                android:background="@drawable/admin_input_bg"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:inputType="text"
+                android:layout_marginBottom="14dp" />
+
+            <!-- Mô tả -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mô tả"
+                android:textColor="@color/admin_text_secondary"
+                android:textSize="13sp"
+                android:layout_marginBottom="6dp" />
+
+            <EditText
+                android:id="@+id/etDescription"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:hint="Nhập mô tả phim..."
+                android:textColorHint="@color/admin_text_secondary"
+                android:textColor="@color/admin_text_primary"
+                android:background="@drawable/admin_input_bg"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:paddingTop="10dp"
+                android:gravity="top"
+                android:inputType="textMultiLine"
+                android:layout_marginBottom="14dp" />
+
+            <!-- Row: Thời lượng + Năm -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="14dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginEnd="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Thời lượng (phút) *"
+                        android:textColor="@color/admin_text_secondary"
+                        android:textSize="13sp"
+                        android:layout_marginBottom="6dp" />
+
+                    <EditText
+                        android:id="@+id/etDuration"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:hint="120"
+                        android:textColorHint="@color/admin_text_secondary"
+                        android:textColor="@color/admin_text_primary"
+                        android:background="@drawable/admin_input_bg"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        android:inputType="number" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Năm sản xuất"
+                        android:textColor="@color/admin_text_secondary"
+                        android:textSize="13sp"
+                        android:layout_marginBottom="6dp" />
+
+                    <EditText
+                        android:id="@+id/etYear"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:hint="2024"
+                        android:textColorHint="@color/admin_text_secondary"
+                        android:textColor="@color/admin_text_primary"
+                        android:background="@drawable/admin_input_bg"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        android:inputType="number" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Ngày phát hành -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ngày phát hành"
+                android:textColor="@color/admin_text_secondary"
+                android:textSize="13sp"
+                android:layout_marginBottom="6dp" />
+
+            <EditText
+                android:id="@+id/etReleaseDate"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="dd/MM/yyyy"
+                android:textColorHint="@color/admin_text_secondary"
+                android:textColor="@color/admin_text_primary"
+                android:background="@drawable/admin_input_bg"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:inputType="text"
+                android:layout_marginBottom="14dp" />
+
+            <!-- Trailer URL -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="URL Trailer"
+                android:textColor="@color/admin_text_secondary"
+                android:textSize="13sp"
+                android:layout_marginBottom="6dp" />
+
+            <EditText
+                android:id="@+id/etTrailerUrl"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="https://youtube.com/..."
+                android:textColorHint="@color/admin_text_secondary"
+                android:textColor="@color/admin_text_primary"
+                android:background="@drawable/admin_input_bg"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:inputType="textUri"
+                android:layout_marginBottom="14dp" />
+
+            <!-- Thể loại -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Thể loại"
+                android:textColor="@color/admin_text_secondary"
+                android:textSize="13sp"
+                android:layout_marginBottom="6dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="14dp">
+
+                <Button
+                    android:id="@+id/btnSelectGenre"
+                    android:layout_width="0dp"
+                    android:layout_height="52dp"
+                    android:layout_weight="1"
+                    android:text="Chọn thể loại"
+                    android:textSize="13sp"
+                    android:background="@drawable/admin_button_secondary"
+                    android:textColor="@color/admin_text_primary"
+                    android:layout_marginEnd="4dp" />
+
+                <ImageButton
+                    android:id="@+id/btnAddGenre"
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:src="@android:drawable/ic_menu_add"
+                    android:contentDescription="Thêm thể loại"
+                    android:tint="@color/white"
+                    android:background="?attr/selectableItemBackgroundBorderless" />
+            </LinearLayout>
+
+            <!-- Genre chips display -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/admin_input_bg"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:minHeight="52dp"
+                android:layout_marginBottom="20dp">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupGenres"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="8dp" />
+            </HorizontalScrollView>
+
+
+            <!-- Progress Bar -->
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone" />
+
+            <!-- Save button -->
+            <Button
+                android:id="@+id/btnSave"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Lưu phim"
+                android:textColor="@color/admin_text_primary"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:background="@drawable/admin_button_primary"
+                android:layout_marginBottom="32dp" />
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

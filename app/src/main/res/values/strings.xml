@@ -1,4 +1,21 @@
 <resources>
     <string name="app_name">dacs3-ticket-booking-app</string>
     <string name="cinema_ticket_booking">Cinema Ticket Booking</string>
+
+    <!-- Common -->
+    <string name="back">Quay lại</string>
+    <string name="save">💾 Lưu</string>
+    <string name="delete">🗑️ Xóa</string>
+    <string name="search">Tìm kiếm</string>
+    <string name="clear">Xóa</string>
+
+    <!-- User Form -->
+    <string name="user_avatar">Ảnh đại diện</string>
+    <string name="full_name">Họ &amp; Tên *</string>
+    <string name="enter_full_name">Nhập họ và tên</string>
+    <string name="email">Email *</string>
+    <string name="email_hint">user@email.com</string>
+    <string name="role">Quyền hạn *</string>
+    <string name="role_user">👤 User</string>
+    <string name="role_admin">⭐ Admin</string>
 </resources>
