@@ -163,6 +163,37 @@
 
             </LinearLayout>
 
+            <!-- View My Bills -->
+            <LinearLayout
+                android:id="@+id/myBillsBtn"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="16dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginTop="8dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/btn_2"
+                    android:contentDescription="My Bills"
+                    android:tint="@color/orange" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="My Bills"
+                    android:textSize="16sp"
+                    android:textColor="@android:color/white"
+                    android:layout_marginStart="16dp" />
+
+            </LinearLayout>
+
         </LinearLayout>
     </ScrollView>
 

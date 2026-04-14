@@ -8,22 +8,27 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.dacs3_ticket_booking_app.data.model.Bill
 import com.example.dacs3_ticket_booking_app.data.model.Movie
 import com.example.dacs3_ticket_booking_app.data.model.Room
 import com.example.dacs3_ticket_booking_app.databinding.ActivitySeatListBinding
 import com.example.dacs3_ticket_booking_app.ui.view.adapter.DateAdapter
 import com.example.dacs3_ticket_booking_app.ui.view.adapter.SeatAdapter
 import com.example.dacs3_ticket_booking_app.ui.view.adapter.TimeAdapter
+import com.example.dacs3_ticket_booking_app.ui.viewmodel.BillViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.RoomViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.ShowtimeViewModel
 import com.example.dacs3_ticket_booking_app.utils.PriceManager
 import com.example.dacs3_ticket_booking_app.utils.SeatUtils
+import com.google.firebase.auth.FirebaseAuth
 
 class SeatListActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySeatListBinding
     private lateinit var movie: Movie
     private lateinit var showtimeViewModel: ShowtimeViewModel
     private lateinit var roomViewModel: RoomViewModel
+    private lateinit var billViewModel: BillViewModel
+    private lateinit var firebaseAuth: FirebaseAuth
     
     private var selectedScreeningDate: String = ""
     private var selectedTimeSlot: String = ""
@@ -31,6 +36,8 @@ class SeatListActivity : AppCompatActivity() {
     private var selectedPriceTier: String = "morning"  // ✅ Lưu priceTier từ showtime
     private var price: Double = 0.0
     private var selectedSeatCount: Int = 0
+    private var selectedSeatPositions: List<String> = emptyList()  // ✅ Danh sách ghế được chọn
+    private var seatAdapter: SeatAdapter? = null  // ✅ Reference đến adapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,6 +65,8 @@ class SeatListActivity : AppCompatActivity() {
     private fun setupViewModels() {
         showtimeViewModel = ViewModelProvider(this).get(ShowtimeViewModel::class.java)
         roomViewModel = ViewModelProvider(this).get(RoomViewModel::class.java)
+        billViewModel = ViewModelProvider(this).get(BillViewModel::class.java)
+        firebaseAuth = FirebaseAuth.getInstance()
     }
 
     private fun backOnClick() {
@@ -194,11 +203,12 @@ class SeatListActivity : AppCompatActivity() {
         }
         
         binding.seatRecylerView.layoutManager = gridLayoutManager
-        binding.seatRecylerView.adapter = SeatAdapter(
+        seatAdapter = SeatAdapter(
             seatCells.map { it.position },
             object : SeatAdapter.SelectedSeat {
                 override fun Return(selectedName: String, num: Int) {
                     selectedSeatCount = num
+                    selectedSeatPositions = seatAdapter?.getSelectedPositions() ?: emptyList()
                     binding.numberSelectedTxt.text = "$num Ghế Được Chọn"
                     // ✅ Tính giá theo priceTier
                     price = PriceManager.calculateTotal(selectedPriceTier, num)
@@ -207,6 +217,13 @@ class SeatListActivity : AppCompatActivity() {
             },
             seatNameMap  // Truyền map A1-A8
         )
+        binding.seatRecylerView.adapter = seatAdapter
+        
+        // ✅ Tải danh sách ghế đã được đặt từ showtime
+        val selectedShowtime = showtimeViewModel.selectedShowtime.value
+        if (selectedShowtime != null) {
+            seatAdapter?.setUnavailableSeats(selectedShowtime.bookedSeats)
+        }
     }
 
     // ✅ Xử lý đặt vé
@@ -216,13 +233,64 @@ class SeatListActivity : AppCompatActivity() {
             return
         }
         
+        val selectedShowtime = showtimeViewModel.selectedShowtime.value
+        if (selectedShowtime == null) {
+            android.widget.Toast.makeText(this, "Lỗi: Không tìm thấy suất chiếu", android.widget.Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        val userId = firebaseAuth.currentUser?.uid
+        if (userId == null) {
+            android.widget.Toast.makeText(this, "Lỗi: User chưa đăng nhập", android.widget.Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        // ✅ Lấy danh sách ghế được chọn từ adapter
+        val selectedSeats = seatAdapter?.getSelectedPositions() ?: emptyList()
+        if (selectedSeats.isEmpty()) {
+            android.widget.Toast.makeText(this, "Danh sách ghế trống", android.widget.Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        // ✅ Log dữ liệu đặt vé
+        android.util.Log.d("SeatListActivity", "📋 Booking Data:")
+        android.util.Log.d("SeatListActivity", "  - User ID: $userId")
+        android.util.Log.d("SeatListActivity", "  - Showtime ID: ${selectedShowtime.id}")
+        android.util.Log.d("SeatListActivity", "  - Seats: ${selectedSeats.joinToString(", ")}")
+        android.util.Log.d("SeatListActivity", "  - Total Price: ${PriceManager.formatPrice(price)}")
+        
+        // ✅ 1. Lock ghế trước (prevent overbooking)
+        showtimeViewModel.lockSeats(selectedShowtime.id, selectedSeats)
+        
+        // ✅ 2. Tạo Bill object
+        val unitPrice = PriceManager.getPrice(selectedPriceTier)  // Giá vé đơn vị
+        val bill = Bill(
+            id = "",  // Sẽ được gán bởi Firestore
+            userId = userId,
+            showtimeId = selectedShowtime.id,
+            seatPositions = selectedSeats,  // Danh sách ghế
+            price = unitPrice,              // ✅ Giá vé đơn vị (tính tổng khi hiển thị)
+            bookingTime = System.currentTimeMillis(),
+            status = "paid",
+            qrCodeData = ""  // TODO: Generate QR code
+        )
+        
+        // ✅ 3. Thêm Bill vào Firestore
+        billViewModel.addBill(bill)
+        
+        // ✅ 4. Book ghế (thêm vào danh sách ghế đã đặt)
+        billViewModel.bookSeats(selectedShowtime.id, selectedSeats)
+        
+        // ✅ Hiển thị thông báo thành công
         android.widget.Toast.makeText(
             this, 
-            "Đã đặt $selectedSeatCount ghế - Tổng: ${PriceManager.formatPrice(price)}", 
-            android.widget.Toast.LENGTH_SHORT
+            "✅ Đã đặt ${selectedSeatCount} ghế thành công!\n${selectedSeats.joinToString(", ")}\nTổng: ${PriceManager.formatPrice(price)}", 
+            android.widget.Toast.LENGTH_LONG
         ).show()
         
-        // TODO: Gọi API để lưu vé vào database
-        // Hiện tại chỉ hiển thị toast, sau sẽ thêm logic gửi dữ liệu
+        // ✅ 5. Quay lại sau 2 giây (có thể thay bằng chuyển sang payment screen)
+        binding.root.postDelayed({
+            finish()
+        }, 2000)
     }
 }

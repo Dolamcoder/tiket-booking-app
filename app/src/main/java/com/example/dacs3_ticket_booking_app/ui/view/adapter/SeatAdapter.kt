@@ -13,6 +13,7 @@ class SeatAdapter(
     private val selectedSeat: SelectedSeat,
     private val seatNameMap: Map<String, String> = emptyMap()  // Lưu position -> name từ SeatCell
 ) : RecyclerView.Adapter<SeatAdapter.SeatViewHolder>() {
+    // ✅ Sử dụng Set để tự động tránh trùng lặp
     private val selectedPositions = mutableSetOf<String>()
     
     // Trạng thái ghế: AVAILABLE, SELECTED, UNAVAILABLE
@@ -61,16 +62,28 @@ class SeatAdapter(
                 if (isEmpty) return@setOnClickListener
                 
                 val currentStatus = seatStatus[position] ?: SeatStatus.AVAILABLE
+                
+                // ✅ Chỉ cho phép chọn/bỏ chọn ghế AVAILABLE hoặc SELECTED
+                // Ghế UNAVAILABLE không thể click
+                if (currentStatus == SeatStatus.UNAVAILABLE) {
+                    return@setOnClickListener
+                }
+                
                 if (currentStatus == SeatStatus.AVAILABLE) {
                     seatStatus[position] = SeatStatus.SELECTED
-                    selectedPositions.add(position)
+                    selectedPositions.add(position)  // Set tự động tránh trùng lặp
                 } else if (currentStatus == SeatStatus.SELECTED) {
                     seatStatus[position] = SeatStatus.AVAILABLE
                     selectedPositions.remove(position)
                 }
+                
                 notifyItemChanged(adapterPosition)
-                // Hiển thị tên ghế (bỏ vị trí trống)
-                val selected = selectedPositions.map { seatNameMap[it] ?: "" }.filter { it.isNotEmpty() }.joinToString(", ")
+                
+                // ✅ Gửi danh sách ghế được chọn (tên ghế, không vị trí)
+                val selected = selectedPositions
+                    .mapNotNull { seatNameMap[it]?.takeIf { name -> name.isNotEmpty() } }
+                    .sorted()  // Sắp xếp theo tên ghế
+                    .joinToString(", ")
                 selectedSeat.Return(selected, selectedPositions.size)
             }
         }
@@ -91,6 +104,35 @@ class SeatAdapter(
     }
 
     override fun getItemCount(): Int = seatPositions.size
+
+    // ✅ Lấy danh sách tên ghế đã chọn (sắp xếp)
+    fun getSelectedSeatNames(): List<String> {
+        return selectedPositions
+            .mapNotNull { seatNameMap[it]?.takeIf { name -> name.isNotEmpty() } }
+            .sorted()
+    }
+
+    // ✅ Lấy danh sách vị trí ghế đã chọn (position)
+    fun getSelectedPositions(): List<String> {
+        return selectedPositions.toList()
+    }
+
+    // ✅ Reset tất cả ghế về AVAILABLE
+    fun resetSelection() {
+        selectedPositions.forEach { position ->
+            seatStatus[position] = SeatStatus.AVAILABLE
+        }
+        selectedPositions.clear()
+        notifyDataSetChanged()
+    }
+
+    // ✅ Đặt trạng thái ghế (dùng khi tải danh sách ghế đã được đặt)
+    fun setUnavailableSeats(unavailablePositions: List<String>) {
+        unavailablePositions.forEach { position ->
+            seatStatus[position] = SeatStatus.UNAVAILABLE
+        }
+        notifyDataSetChanged()
+    }
 
     interface SelectedSeat {
         fun Return(selectedName: String, num: Int)

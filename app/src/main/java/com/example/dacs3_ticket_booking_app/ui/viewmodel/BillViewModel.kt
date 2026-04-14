@@ -6,10 +6,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dacs3_ticket_booking_app.data.model.Bill
 import com.example.dacs3_ticket_booking_app.data.repository.BillRepository
+import com.example.dacs3_ticket_booking_app.data.repository.ShowtimeRepository
 import kotlinx.coroutines.launch
 
 class BillViewModel : ViewModel() {
     private val billRepository = BillRepository()
+    private val showtimeRepository = ShowtimeRepository()
 
     private val _bills = MutableLiveData<List<Bill>>()
     val bills: LiveData<List<Bill>> = _bills
@@ -83,6 +85,22 @@ class BillViewModel : ViewModel() {
         }
     }
 
+    // ✅ Book multiple seats for a showtime
+    fun bookSeats(showtimeId: String, seatPositions: List<String>) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            val result = showtimeRepository.addBookedSeats(showtimeId, seatPositions)
+            result.onSuccess {
+                _successMessage.value = "Seats booked successfully"
+                _isLoading.value = false
+            }
+            result.onFailure { e ->
+                _errorMessage.value = "Error booking seats: ${e.message}"
+                _isLoading.value = false
+            }
+        }
+    }
+
     fun cancelBill(billId: String) {
         _isLoading.value = true
         viewModelScope.launch {
@@ -94,6 +112,22 @@ class BillViewModel : ViewModel() {
             }
             result.onFailure { e ->
                 _errorMessage.value = "Error cancelling bill: ${e.message}"
+                _isLoading.value = false
+            }
+        }
+    }
+
+    // ✅ Release multiple booked seats (when cancelling bill)
+    fun releaseSeats(showtimeId: String, seatPositions: List<String>) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            val result = showtimeRepository.removeBookedSeats(showtimeId, seatPositions)
+            result.onSuccess {
+                _successMessage.value = "Seats released successfully"
+                _isLoading.value = false
+            }
+            result.onFailure { e ->
+                _errorMessage.value = "Error releasing seats: ${e.message}"
                 _isLoading.value = false
             }
         }

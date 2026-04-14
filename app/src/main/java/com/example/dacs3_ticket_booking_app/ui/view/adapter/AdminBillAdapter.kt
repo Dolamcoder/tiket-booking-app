@@ -22,8 +22,13 @@ class AdminBillAdapter(
         fun bind(ticket: Bill) {
             binding.tvBillId.text = "Bill #${ticket.id.take(8)}"
             binding.tvBookingTime.text = "Đặt lúc: ${sdf.format(Date(ticket.bookingTime))}"
-            binding.tvSeats.text = "Ghế: ${SeatUtils.positionToDisplay(ticket.seatPosition)}"
-            binding.tvTotalPrice.text = "Giá: ${ticket.price}đ"
+            // Hiển thị danh sách ghế
+            val seatsDisplay = ticket.seatPositions.joinToString(", ") { SeatUtils.positionToDisplay(it) }
+            val seatCount = ticket.seatPositions.size
+            binding.tvSeats.text = "Ghế: $seatsDisplay ($seatCount ghế)"
+            // ✅ Tính tổng tiền = price (giá đơn vị) * số lượng ghế
+            val totalPrice = ticket.price * seatCount
+            binding.tvTotalPrice.text = "Tổng: ${totalPrice.toInt()}đ"
             binding.tvStatus.text = when (ticket.status) {
                 "paid" -> "Đã thanh toán"
                 "cancelled" -> "Đã hủy"

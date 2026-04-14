@@ -39,6 +39,11 @@ class ProfileActivity : AppCompatActivity() {
         binding.backBtn.setOnClickListener {
             finish()
         }
+
+        // ✅ Nút My Bills
+        binding.myBillsBtn.setOnClickListener {
+            startActivity(Intent(this, UserBillHistoryActivity::class.java))
+        }
     }
 
     private fun displayUserInfo() {

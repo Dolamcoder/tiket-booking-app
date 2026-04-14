@@ -238,16 +238,18 @@ class ShowtimeRepository {
         return showtimes.sortedBy { tierOrder[it.priceTier] ?: 0 }
     }
 
-    // ✅ Thêm ghế vào danh sách ghế đã đặt (khi tạo ticket)
-    suspend fun addBookedSeat(showtimeId: String, seatPosition: String): Result<Unit> {
+    // ✅ Add multiple seats to booked seats list (when creating bill with multiple seats)
+    suspend fun addBookedSeats(showtimeId: String, seatPositions: List<String>): Result<Unit> {
         return try {
             val docRef = showtimeCollection.document(showtimeId)
             val showtime = docRef.get().await().toObject(Showtime::class.java)
                 ?: throw Exception("Không tìm thấy suất chiếu")
 
             val bookedSeats = showtime.bookedSeats.toMutableList()
-            if (!bookedSeats.contains(seatPosition)) {
-                bookedSeats.add(seatPosition)
+            for (position in seatPositions) {
+                if (!bookedSeats.contains(position)) {
+                    bookedSeats.add(position)
+                }
             }
             docRef.update("bookedSeats", bookedSeats).await()
             Result.success(Unit)
@@ -256,15 +258,17 @@ class ShowtimeRepository {
         }
     }
 
-    // ✅ Xóa ghế khỏi danh sách ghế đã đặt (khi hủy ticket)
-    suspend fun removeBookedSeat(showtimeId: String, seatPosition: String): Result<Unit> {
+    // ✅ Remove multiple seats from booked seats list (when cancelling bill with multiple seats)
+    suspend fun removeBookedSeats(showtimeId: String, seatPositions: List<String>): Result<Unit> {
         return try {
             val docRef = showtimeCollection.document(showtimeId)
             val showtime = docRef.get().await().toObject(Showtime::class.java)
                 ?: throw Exception("Không tìm thấy suất chiếu")
 
             val bookedSeats = showtime.bookedSeats.toMutableList()
-            bookedSeats.remove(seatPosition)
+            for (position in seatPositions) {
+                bookedSeats.remove(position)
+            }
             docRef.update("bookedSeats", bookedSeats).await()
             Result.success(Unit)
         } catch (e: Exception) {
