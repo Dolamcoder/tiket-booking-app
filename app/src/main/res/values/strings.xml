@@ -18,4 +18,10 @@
     <string name="role">Quyền hạn *</string>
     <string name="role_user">👤 User</string>
     <string name="role_admin">⭐ Admin</string>
+
+    <!-- Revenue View Types -->
+    <string-array name="revenue_view_types">
+        <item>Doanh thu theo phim</item>
+        <item>Doanh thu theo phòng</item>
+    </string-array>
 </resources>

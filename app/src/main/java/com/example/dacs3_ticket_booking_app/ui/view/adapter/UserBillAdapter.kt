@@ -10,7 +10,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class UserBillAdapter(
-    private val items: MutableList<Bill>
+    private val items: MutableList<Bill>,
+    private val onItemClick: ((Bill) -> Unit)? = null
 ) : RecyclerView.Adapter<UserBillAdapter.ViewHolder>() {
 
     private val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
@@ -44,6 +45,11 @@ class UserBillAdapter(
                     else -> binding.root.context.resources.getColor(android.R.color.white, null)
                 }
             )
+
+            // ✅ Add click listener
+            binding.root.setOnClickListener {
+                onItemClick?.invoke(bill)
+            }
         }
     }
 

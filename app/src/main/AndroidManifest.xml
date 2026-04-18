@@ -66,6 +66,12 @@
             android:name=".ui.view.admin.AdminBillListActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.view.admin.AdminBillDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.view.client.UserBillDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.view.admin.AdminUserListActivity"
             android:exported="false" />
         <activity

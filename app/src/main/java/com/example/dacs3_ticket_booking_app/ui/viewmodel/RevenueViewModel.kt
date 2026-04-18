@@ -23,6 +23,9 @@ class RevenueViewModel : ViewModel() {
     private val _revenueByMovie = MutableLiveData<Map<String, Double>>()
     val revenueByMovie: LiveData<Map<String, Double>> = _revenueByMovie
 
+    private val _revenueByRoom = MutableLiveData<Map<String, Double>>()
+    val revenueByRoom: LiveData<Map<String, Double>> = _revenueByRoom
+
     private val _revenueByDate = MutableLiveData<Map<Long, Double>>()
     val revenueByDate: LiveData<Map<Long, Double>> = _revenueByDate
 
@@ -81,6 +84,40 @@ class RevenueViewModel : ViewModel() {
                 _totalTickets.value = revenueRepository.calculateTotalTickets(list)
                 _revenueByMovie.value = revenueRepository.groupRevenueByMovie(list)
                 _revenueByDate.value = revenueRepository.groupRevenueByDate(list)
+                _isLoading.value = false
+            }
+            result.onFailure { exception ->
+                _errorMessage.value = "Lỗi: ${exception.message}"
+                _isLoading.value = false
+            }
+        }
+    }
+    
+    // ✅ Lấy doanh thu theo phòng
+    fun getRevenueByRoom() {
+        _isLoading.value = true
+        viewModelScope.launch {
+            val result = revenueRepository.getRevenueByRoomFromBills()
+            result.onSuccess { roomMap ->
+                _revenueByRoom.value = roomMap
+                _totalRevenue.value = roomMap.values.sum()
+                _isLoading.value = false
+            }
+            result.onFailure { exception ->
+                _errorMessage.value = "Lỗi: ${exception.message}"
+                _isLoading.value = false
+            }
+        }
+    }
+    
+    // ✅ Lấy doanh thu theo phòng trong khoảng ngày
+    fun getRevenueByRoomDateRange(startDate: Long, endDate: Long) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            val result = revenueRepository.getRevenueByRoomFromBillsByDateRange(startDate, endDate)
+            result.onSuccess { roomMap ->
+                _revenueByRoom.value = roomMap
+                _totalRevenue.value = roomMap.values.sum()
                 _isLoading.value = false
             }
             result.onFailure { exception ->

@@ -62,4 +62,22 @@ class RoomRepository {
             Result.failure(e)
         }
     }
+
+    // ✅ Lấy phòng theo showtimeId
+    suspend fun getRoomByShowtimeId(showtimeId: String): Result<Room?> {
+        return try {
+            val showtimeCollection = db.collection("showtimes")
+            val showtimeDoc = showtimeCollection.document(showtimeId).get().await()
+            val roomId = showtimeDoc.getString("roomId")
+
+            if (roomId != null) {
+                val room = roomCollection.document(roomId).get().await().toObject(Room::class.java)
+                Result.success(room)
+            } else {
+                Result.failure(Exception("Room ID not found in showtime"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

@@ -103,4 +103,19 @@ class RoomViewModel : ViewModel() {
             }
         }
     }
+
+    fun getRoomByShowtimeId(showtimeId: String) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            val result = roomRepository.getRoomByShowtimeId(showtimeId)
+            result.onSuccess { room ->
+                _roomDetail.value = room
+                _isLoading.value = false
+            }
+            result.onFailure { e ->
+                _errorMessage.value = "Error loading room: ${e.message}"
+                _isLoading.value = false
+            }
+        }
+    }
 }

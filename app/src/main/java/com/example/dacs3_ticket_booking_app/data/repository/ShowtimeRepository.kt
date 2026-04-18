@@ -108,9 +108,9 @@ class ShowtimeRepository {
     }
 
     // 🔒 Lock ghế (Transaction an toàn, chống đặt trùng)
-    // LOCK_TIMEOUT_MS = 10 phút
+    // LOCK_TIMEOUT_MS = 2 phút (auto unlock nếu quá 2p)
     suspend fun lockSeats(showtimeId: String, positions: List<String>): Result<Unit> {
-        val LOCK_TIMEOUT_MS = 10 * 60 * 1000L
+        val LOCK_TIMEOUT_MS = 2 * 60 * 1000L  // ✅ 2 phút
         val docRef = showtimeCollection.document(showtimeId)
         return try {
             db.runTransaction { transaction ->
@@ -122,32 +122,33 @@ class ShowtimeRepository {
                 val booked = showtime.bookedSeats
                 val locked = showtime.lockedSeats.toMutableMap()
 
-                // Xóa các lock đã hết hạn
+                // ✅ Xóa các lock đã hết hạn (>2 phút)
                 locked.entries.removeIf { (_, ts) -> now - ts > LOCK_TIMEOUT_MS }
 
-                // Kiểm tra xem ghế có available không
+                // ✅ Kiểm tra xem ghế có available không
                 for (pos in positions) {
-                    if (booked.contains(pos)) {
-                        throw Exception("Ghế $pos đã được đặt")
-                    }
-                    if (locked.containsKey(pos)) {
-                        throw Exception("Ghế $pos đang được giữ bởi người khác")
+                    when {
+                        booked.contains(pos) -> throw Exception("Ghế $pos đã được đặt rồi")
+                        locked.containsKey(pos) -> throw Exception("Ghế $pos đang được giữ bởi người khác")
                     }
                 }
 
-                // Lock các ghế
+                // ✅ Lock các ghế (thêm vào map)
                 for (pos in positions) {
                     locked[pos] = now
                 }
+                
                 transaction.update(docRef, "lockedSeats", locked)
             }.await()
             Result.success(Unit)
         } catch (e: Exception) {
+            android.util.Log.e("ShowtimeRepository", "❌ Lock seats failed: ${e.message}", e)
             Result.failure(e)
         }
     }
 
     // ✅ Xác nhận ghế sau thanh toán thành công (Transaction)
+    // Chuyển từ locked → booked
     suspend fun confirmBooking(showtimeId: String, positions: List<String>): Result<Unit> {
         val docRef = showtimeCollection.document(showtimeId)
         return try {
@@ -159,9 +160,15 @@ class ShowtimeRepository {
                 val booked = showtime.bookedSeats.toMutableList()
                 val locked = showtime.lockedSeats.toMutableMap()
 
+                // ✅ Chuyển từ locked → booked
                 for (pos in positions) {
-                    booked.add(pos)
-                    locked.remove(pos)
+                    if (locked.containsKey(pos)) {
+                        if (!booked.contains(pos)) {
+                            booked.add(pos)
+                        }
+                        locked.remove(pos)
+                        android.util.Log.d("ShowtimeRepository", "✅ Confirmed seat: $pos")
+                    }
                 }
 
                 transaction.update(docRef, "bookedSeats", booked)
@@ -169,6 +176,7 @@ class ShowtimeRepository {
             }.await()
             Result.success(Unit)
         } catch (e: Exception) {
+            android.util.Log.e("ShowtimeRepository", "❌ Confirm booking failed: ${e.message}", e)
             Result.failure(e)
         }
     }
@@ -183,12 +191,20 @@ class ShowtimeRepository {
                     ?: throw Exception("Không tìm thấy suất chiếu")
 
                 val locked = showtime.lockedSeats.toMutableMap()
-                for (pos in positions) locked.remove(pos)
+                
+                // ✅ Xóa lock cho từng ghế
+                for (pos in positions) {
+                    if (locked.containsKey(pos)) {
+                        locked.remove(pos)
+                        android.util.Log.d("ShowtimeRepository", "✅ Released lock for seat: $pos")
+                    }
+                }
 
                 transaction.update(docRef, "lockedSeats", locked)
             }.await()
             Result.success(Unit)
         } catch (e: Exception) {
+            android.util.Log.e("ShowtimeRepository", "❌ Release locked seats failed: ${e.message}", e)
             Result.failure(e)
         }
     }
@@ -238,40 +254,44 @@ class ShowtimeRepository {
         return showtimes.sortedBy { tierOrder[it.priceTier] ?: 0 }
     }
 
-    // ✅ Add multiple seats to booked seats list (when creating bill with multiple seats)
-    suspend fun addBookedSeats(showtimeId: String, seatPositions: List<String>): Result<Unit> {
+    // ✅ Thêm 1 ghế vào danh sách booked
+    suspend fun addBookedSeat(showtimeId: String, seatPosition: String): Result<Unit> {
         return try {
             val docRef = showtimeCollection.document(showtimeId)
             val showtime = docRef.get().await().toObject(Showtime::class.java)
                 ?: throw Exception("Không tìm thấy suất chiếu")
 
             val bookedSeats = showtime.bookedSeats.toMutableList()
-            for (position in seatPositions) {
-                if (!bookedSeats.contains(position)) {
-                    bookedSeats.add(position)
-                }
+            
+            if (!bookedSeats.contains(seatPosition)) {
+                bookedSeats.add(seatPosition)
+                docRef.update("bookedSeats", bookedSeats).await()
+                android.util.Log.d("ShowtimeRepository", "✅ Added booked seat: $seatPosition")
             }
-            docRef.update("bookedSeats", bookedSeats).await()
             Result.success(Unit)
         } catch (e: Exception) {
+            android.util.Log.e("ShowtimeRepository", "❌ Add booked seat failed: ${e.message}", e)
             Result.failure(e)
         }
     }
 
-    // ✅ Remove multiple seats from booked seats list (when cancelling bill with multiple seats)
-    suspend fun removeBookedSeats(showtimeId: String, seatPositions: List<String>): Result<Unit> {
+    // ✅ Xóa 1 ghế khỏi danh sách booked (khi hủy hóa đơn)
+    suspend fun removeBookedSeat(showtimeId: String, seatPosition: String): Result<Unit> {
         return try {
             val docRef = showtimeCollection.document(showtimeId)
             val showtime = docRef.get().await().toObject(Showtime::class.java)
                 ?: throw Exception("Không tìm thấy suất chiếu")
 
             val bookedSeats = showtime.bookedSeats.toMutableList()
-            for (position in seatPositions) {
-                bookedSeats.remove(position)
+            
+            if (bookedSeats.contains(seatPosition)) {
+                bookedSeats.remove(seatPosition)
+                docRef.update("bookedSeats", bookedSeats).await()
+                android.util.Log.d("ShowtimeRepository", "✅ Removed booked seat: $seatPosition")
             }
-            docRef.update("bookedSeats", bookedSeats).await()
             Result.success(Unit)
         } catch (e: Exception) {
+            android.util.Log.e("ShowtimeRepository", "❌ Remove booked seat failed: ${e.message}", e)
             Result.failure(e)
         }
     }
@@ -304,6 +324,17 @@ class ShowtimeRepository {
             // Lấy khung giờ duy nhất (đã sắp xếp)
             val timeSlots = showtimes.map { it.timeSlot }.distinct()
             Result.success(timeSlots)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // ✅ Lấy chi tiết suất chiếu theo ID
+    suspend fun getShowtimeById(showtimeId: String): Result<Showtime?> {
+        return try {
+            val doc = showtimeCollection.document(showtimeId).get().await()
+            val showtime = doc.toObject(Showtime::class.java)
+            Result.success(showtime)
         } catch (e: Exception) {
             Result.failure(e)
         }

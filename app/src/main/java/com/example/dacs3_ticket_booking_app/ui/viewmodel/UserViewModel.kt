@@ -14,6 +14,9 @@ class UserViewModel : ViewModel() {
     private val _users = MutableLiveData<List<User>>()
     val users: LiveData<List<User>> = _users
 
+    private val _userDetail = MutableLiveData<User?>()
+    val userDetail: LiveData<User?> = _userDetail
+
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
@@ -112,6 +115,21 @@ class UserViewModel : ViewModel() {
 
      fun clearSuccessMessage() {
          _successMessage.value = null
+     }
+
+     fun getUserById(userId: String) {
+         _isLoading.value = true
+         viewModelScope.launch {
+             val result = userRepository.getUserById(userId)
+             result.onSuccess { user ->
+                 _userDetail.value = user
+                 _isLoading.value = false
+             }
+             result.onFailure { exception ->
+                 _errorMessage.value = "Error loading user: ${exception.message}"
+                 _isLoading.value = false
+             }
+         }
      }
  }
 

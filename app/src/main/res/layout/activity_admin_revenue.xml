@@ -44,6 +44,163 @@
                 android:layout_marginStart="16dp" />
         </LinearLayout>
 
+        <!-- Filter Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/admin_surface_card"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp">
+
+            <!-- View Type Spinner -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Xem theo:"
+                    android:textColor="@color/admin_text_secondary"
+                    android:textSize="12sp"
+                    android:layout_marginEnd="8dp" />
+
+                <Spinner
+                    android:id="@+id/spinnerViewType"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/rounded_button_semi_black"
+                    android:entries="@array/revenue_view_types" />
+            </LinearLayout>
+
+            <!-- Date Range -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginEnd="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Từ ngày"
+                        android:textColor="@color/admin_text_secondary"
+                        android:textSize="12sp" />
+
+                    <EditText
+                        android:id="@+id/edtStartDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:background="@drawable/rounded_button_semi_black"
+                        android:inputType="date"
+                        android:textColor="@color/admin_text_primary"
+                        android:textColorHint="@color/admin_text_secondary"
+                        android:hint="dd/MM/yyyy"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:textSize="12sp"
+                        android:clickable="true"
+                        android:focusable="true" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Đến ngày"
+                        android:textColor="@color/admin_text_secondary"
+                        android:textSize="12sp" />
+
+                    <EditText
+                        android:id="@+id/edtEndDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:background="@drawable/rounded_button_semi_black"
+                        android:inputType="date"
+                        android:textColor="@color/admin_text_primary"
+                        android:textColorHint="@color/admin_text_secondary"
+                        android:hint="dd/MM/yyyy"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:textSize="12sp"
+                        android:clickable="true"
+                        android:focusable="true" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Quick Filter Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="12dp">
+
+                <Button
+                    android:id="@+id/btnToday"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Hôm nay"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/rounded_button_semi_black"
+                    android:textColor="@color/admin_text_primary"
+                    android:textSize="11sp" />
+
+                <Button
+                    android:id="@+id/btnWeek"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="7 ngày"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:background="@drawable/rounded_button_semi_black"
+                    android:textColor="@color/admin_text_primary"
+                    android:textSize="11sp" />
+
+                <Button
+                    android:id="@+id/btnMonth"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Tháng này"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:background="@drawable/rounded_button_semi_black"
+                    android:textColor="@color/admin_text_primary"
+                    android:textSize="11sp" />
+
+                <Button
+                    android:id="@+id/btnAll"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Tất cả"
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/rounded_button_semi_black"
+                    android:textColor="@color/admin_text_primary"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+
         <!-- Total Stats Card -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -67,7 +224,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Total Revenue"
+                        android:text="Tổng doanh thu"
                         android:textColor="@color/admin_text_secondary"
                         android:textSize="12sp" />
 
@@ -75,7 +232,7 @@
                         android:id="@+id/tvTotalRevenue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="0"
+                        android:text="0₫"
                         android:textColor="@color/admin_warning"
                         android:textStyle="bold"
                         android:textSize="24sp"
@@ -91,7 +248,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Total Tickets"
+                        android:text="Tổng vé bán"
                         android:textColor="@color/admin_text_secondary"
                         android:textSize="12sp" />
 
@@ -108,15 +265,23 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Revenue by Movie -->
-        <TextView
-            android:layout_width="wrap_content"
+        <!-- Revenue by Movie/Room -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Revenue by Movie"
-            android:textColor="@color/admin_text_primary"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:layout_marginBottom="8dp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:id="@+id/tvRevenueTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Doanh thu theo phim"
+                android:textColor="@color/admin_text_primary"
+                android:textStyle="bold"
+                android:textSize="18sp" />
+        </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewMovieRevenue"

@@ -1,5 +1,6 @@
 package com.example.dacs3_ticket_booking_app.ui.view.admin
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -34,6 +35,11 @@ class AdminBillListActivity : AppCompatActivity() {
                 bills.toMutableList(),
                 onCancel = { bill ->
                     billViewModel.cancelBill(bill.id)
+                },
+                onItemClick = { bill ->
+                    val intent = Intent(this, AdminBillDetailActivity::class.java)
+                    intent.putExtra("BILL_ID", bill.id)
+                    startActivity(intent)
                 }
             )
         }
@@ -51,3 +57,5 @@ class AdminBillListActivity : AppCompatActivity() {
         }
     }
 }
+
+

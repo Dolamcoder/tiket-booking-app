@@ -1,5 +1,6 @@
 package com.example.dacs3_ticket_booking_app.ui.view.client
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -43,7 +44,14 @@ class UserBillHistoryActivity : AppCompatActivity() {
 
     private fun observeViewModel() {
         billViewModel.bills.observe(this) { bills ->
-            binding.recyclerViewBills.adapter = UserBillAdapter(bills.toMutableList())
+            binding.recyclerViewBills.adapter = UserBillAdapter(
+                bills.toMutableList(),
+                onItemClick = { bill ->
+                    val intent = Intent(this, UserBillDetailActivity::class.java)
+                    intent.putExtra("BILL_ID", bill.id)
+                    startActivity(intent)
+                }
+            )
         }
 
         billViewModel.isLoading.observe(this) { isLoading ->
@@ -55,4 +63,6 @@ class UserBillHistoryActivity : AppCompatActivity() {
         }
     }
 }
+
+
 

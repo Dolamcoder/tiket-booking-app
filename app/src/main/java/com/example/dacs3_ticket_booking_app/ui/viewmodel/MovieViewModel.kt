@@ -227,4 +227,20 @@ class MovieViewModel : ViewModel() {
         val sorted = movieRepository.sortMoviesByRevenue(currentMovies, descending)
         _movies.value = sorted
     }
+
+    // Lấy phim theo ID suất chiếu
+    fun getMovieByShowtimeId(showtimeId: String) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            val result = movieRepository.getMovieByShowtimeId(showtimeId)
+            result.onSuccess { movie ->
+                _movieDetail.value = movie
+                _isLoading.value = false
+            }
+            result.onFailure { e ->
+                _errorMessage.value = "Error loading movie: ${e.message}"
+                _isLoading.value = false
+            }
+        }
+    }
 }

@@ -25,6 +25,9 @@ class BillViewModel : ViewModel() {
     private val _successMessage = MutableLiveData<String>()
     val successMessage: LiveData<String> = _successMessage
 
+    private val _billDetail = MutableLiveData<Bill?>()
+    val billDetail: LiveData<Bill?> = _billDetail
+
     fun getAllBills() {
         _isLoading.value = true
         viewModelScope.launch {
@@ -85,19 +88,37 @@ class BillViewModel : ViewModel() {
         }
     }
 
-    // ✅ Book multiple seats for a showtime
-    fun bookSeats(showtimeId: String, seatPositions: List<String>) {
+    // ✅ Thêm từng ghế vào danh sách booked (gọi từng ghế một)
+    fun bookSeat(showtimeId: String, seatPosition: String) {
         _isLoading.value = true
         viewModelScope.launch {
-            val result = showtimeRepository.addBookedSeats(showtimeId, seatPositions)
+            val result = showtimeRepository.addBookedSeat(showtimeId, seatPosition)
             result.onSuccess {
-                _successMessage.value = "Seats booked successfully"
+                _successMessage.value = "Ghế $seatPosition được xác nhận"
                 _isLoading.value = false
             }
             result.onFailure { e ->
-                _errorMessage.value = "Error booking seats: ${e.message}"
+                _errorMessage.value = "Error booking seat: ${e.message}"
                 _isLoading.value = false
             }
+        }
+    }
+    
+    // ✅ Cũ: bookSeats (thêm nhiều ghế) - GIỮ cho compatibility
+    fun bookSeats(showtimeId: String, seatPositions: List<String>) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            // Gọi từng ghế một
+            for (position in seatPositions) {
+                val result = showtimeRepository.addBookedSeat(showtimeId, position)
+                result.onFailure { e ->
+                    _errorMessage.value = "Error booking seat $position: ${e.message}"
+                    _isLoading.value = false
+                    return@launch
+                }
+            }
+            _successMessage.value = "Tất cả ghế được xác nhận"
+            _isLoading.value = false
         }
     }
 
@@ -117,19 +138,37 @@ class BillViewModel : ViewModel() {
         }
     }
 
-    // ✅ Release multiple booked seats (when cancelling bill)
-    fun releaseSeats(showtimeId: String, seatPositions: List<String>) {
+    // ✅ Xóa từng ghế khỏi danh sách booked (gọi từng ghế một)
+    fun releaseSeat(showtimeId: String, seatPosition: String) {
         _isLoading.value = true
         viewModelScope.launch {
-            val result = showtimeRepository.removeBookedSeats(showtimeId, seatPositions)
+            val result = showtimeRepository.removeBookedSeat(showtimeId, seatPosition)
             result.onSuccess {
-                _successMessage.value = "Seats released successfully"
+                _successMessage.value = "Ghế $seatPosition được giải phóng"
                 _isLoading.value = false
             }
             result.onFailure { e ->
-                _errorMessage.value = "Error releasing seats: ${e.message}"
+                _errorMessage.value = "Error releasing seat: ${e.message}"
                 _isLoading.value = false
             }
+        }
+    }
+    
+    // ✅ Cũ: releaseSeats (xóa nhiều) - GIỮ cho compatibility
+    fun releaseSeats(showtimeId: String, seatPositions: List<String>) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            // Gọi từng ghế một
+            for (position in seatPositions) {
+                val result = showtimeRepository.removeBookedSeat(showtimeId, position)
+                result.onFailure { e ->
+                    _errorMessage.value = "Error releasing seat $position: ${e.message}"
+                    _isLoading.value = false
+                    return@launch
+                }
+            }
+            _successMessage.value = "Tất cả ghế được giải phóng"
+            _isLoading.value = false
         }
     }
 
@@ -143,6 +182,21 @@ class BillViewModel : ViewModel() {
             }
             result.onFailure { e ->
                 _errorMessage.value = "Error loading bills: ${e.message}"
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun getBillById(billId: String) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            val result = billRepository.getBillById(billId)
+            result.onSuccess { bill ->
+                _billDetail.value = bill
+                _isLoading.value = false
+            }
+            result.onFailure { e ->
+                _errorMessage.value = "Error loading bill: ${e.message}"
                 _isLoading.value = false
             }
         }

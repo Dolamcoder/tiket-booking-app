@@ -12,7 +12,8 @@ import java.util.*
 
 class AdminBillAdapter(
     private val items: MutableList<Bill>,
-    private val onCancel: (Bill) -> Unit
+    private val onCancel: (Bill) -> Unit,
+    private val onItemClick: ((Bill) -> Unit)? = null
 ) : RecyclerView.Adapter<AdminBillAdapter.ViewHolder>() {
 
     private val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
@@ -43,6 +44,11 @@ class AdminBillAdapter(
                     .setPositiveButton("Cancel Bill") { _, _ -> onCancel(ticket) }
                     .setNegativeButton("No", null)
                     .show()
+            }
+
+            // ✅ Add click listener to view detail
+            binding.root.setOnClickListener {
+                onItemClick?.invoke(ticket)
             }
         }
     }

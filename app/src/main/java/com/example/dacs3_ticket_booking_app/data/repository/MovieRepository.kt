@@ -180,4 +180,22 @@ class MovieRepository {
             movies.sortedBy { it.totalRevenue }
         }
     }
+
+    // 🎬 Lấy phim theo showtimeId
+    suspend fun getMovieByShowtimeId(showtimeId: String): Result<Movie?> {
+        return try {
+            val showtimeCollection = db.collection("showtimes")
+            val showtimeDoc = showtimeCollection.document(showtimeId).get().await()
+            val movieId = showtimeDoc.getString("movieId")
+            
+            if (movieId != null) {
+                val movie = movieCollection.document(movieId).get().await().toObject(Movie::class.java)
+                Result.success(movie)
+            } else {
+                Result.failure(Exception("Movie ID not found in showtime"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

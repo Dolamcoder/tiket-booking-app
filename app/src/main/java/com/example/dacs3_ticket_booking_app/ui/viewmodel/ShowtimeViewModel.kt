@@ -1,5 +1,6 @@
 package com.example.dacs3_ticket_booking_app.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -34,6 +35,9 @@ class ShowtimeViewModel : ViewModel() {
 
     private val _successMessage = MutableLiveData<String>()
     val successMessage: LiveData<String> = _successMessage
+
+    private val _showtimeDetail = MutableLiveData<Showtime?>()
+    val showtimeDetail: LiveData<Showtime?> = _showtimeDetail
 
     fun getAllShowtimes() {
         _isLoading.value = true
@@ -174,7 +178,14 @@ class ShowtimeViewModel : ViewModel() {
     // ❌ Hủy lock khi user cancel / timeout
     fun releaseLockedSeats(showtimeId: String, positions: List<String>) {
         viewModelScope.launch {
-            showtimeRepository.releaseLockedSeats(showtimeId, positions)
+            val result = showtimeRepository.releaseLockedSeats(showtimeId, positions)
+            result.onSuccess {
+                Log.d("ShowtimeViewModel", "✅ Released locked seats: $positions")
+            }
+            result.onFailure { e ->
+                Log.e("ShowtimeViewModel", "❌ Failed to release locked seats: ${e.message}", e)
+                _errorMessage.value = "Lỗi nhả lock ghế: ${e.message}"
+            }
         }
     }
 
@@ -218,5 +229,21 @@ class ShowtimeViewModel : ViewModel() {
     // 🎬 Lưu suất chiếu được chọn
     fun selectShowtime(showtime: Showtime) {
         _selectedShowtime.value = showtime
+    }
+
+    // 📍 Lấy chi tiết suất chiếu theo ID
+    fun getShowtimeById(showtimeId: String) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            val result = showtimeRepository.getShowtimeById(showtimeId)
+            result.onSuccess { showtime ->
+                _showtimeDetail.value = showtime
+                _isLoading.value = false
+            }
+            result.onFailure { e ->
+                _errorMessage.value = "Error loading showtime: ${e.message}"
+                _isLoading.value = false
+            }
+        }
     }
 }

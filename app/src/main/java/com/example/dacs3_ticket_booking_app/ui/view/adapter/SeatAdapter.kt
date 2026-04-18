@@ -126,10 +126,42 @@ class SeatAdapter(
         notifyDataSetChanged()
     }
 
+    // ✅ Update trạng thái ghế từ server (real-time listener)
+    fun updateSeatsStatus(unavailablePositions: List<String>) {
+        // ✅ Reset tất cả ghế về AVAILABLE trước
+        seatStatus.clear()
+        
+        // ✅ Restore lại các ghế đã select (SELECTED)
+        selectedPositions.forEach { pos ->
+            seatStatus[pos] = SeatStatus.SELECTED
+        }
+        
+        // ✅ Đặt ghế unavailable (locked/booked) - nhưng không override SELECTED
+        unavailablePositions.forEach { position ->
+            // ✅ Không set UNAVAILABLE nếu ghế đang SELECTED (của chính user)
+            if (!selectedPositions.contains(position)) {
+                seatStatus[position] = SeatStatus.UNAVAILABLE
+            }
+        }
+        notifyDataSetChanged()
+    }
+
     // ✅ Đặt trạng thái ghế (dùng khi tải danh sách ghế đã được đặt)
     fun setUnavailableSeats(unavailablePositions: List<String>) {
+        // ✅ Reset tất cả ghế về AVAILABLE trước
+        seatStatus.clear()
+        
+        // ✅ Restore lại các ghế đã select
+        selectedPositions.forEach { pos ->
+            seatStatus[pos] = SeatStatus.SELECTED
+        }
+        
+        // ✅ Đặt ghế unavailable (locked/booked) - nhưng không override SELECTED
         unavailablePositions.forEach { position ->
-            seatStatus[position] = SeatStatus.UNAVAILABLE
+            // ✅ Không set UNAVAILABLE nếu ghế đang SELECTED
+            if (!selectedPositions.contains(position)) {
+                seatStatus[position] = SeatStatus.UNAVAILABLE
+            }
         }
         notifyDataSetChanged()
     }
