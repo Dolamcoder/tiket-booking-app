@@ -10,5 +10,6 @@ data class User(
     var accumulatedMoney: Double = 0.0, // Tien tich luy (so tien da mua ve)
     var avatar: String = "", // Avatar URL from Cloudinary
     var createdAt: Long = 0L,
+    var isActivate:Boolean=false,
     var updatedAt: Long = 0L
 ) : Serializable

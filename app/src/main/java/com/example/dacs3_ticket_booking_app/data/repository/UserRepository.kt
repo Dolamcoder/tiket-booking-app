@@ -1,10 +1,12 @@
 package com.example.dacs3_ticket_booking_app.data.repository
 
 import com.example.dacs3_ticket_booking_app.data.model.User
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
 class UserRepository {
+    private val firebaseAuth = FirebaseAuth.getInstance()
 
     private val db = FirebaseFirestore.getInstance()
     private val userCollection = db.collection("users")
@@ -30,7 +32,28 @@ class UserRepository {
             Result.failure(e)
         }
     }
-
+    suspend fun createUser(user: User): Result<String> {
+        return try {
+            userCollection.document(user.id).set(user).await()
+            Result.success(user.id)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    suspend fun createUserAuth(email:String, password:String): Result<String> {
+        return try {
+            val authResult = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+            val user = authResult.user
+            if(user!=null){
+                Result.success(user.uid)
+            }
+            else{
+                Result.failure(Exception("User creation failed"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
     // ✅ Xóa user
     suspend fun deleteUser(userId: String): Result<Unit> {
         return try {
@@ -40,7 +63,6 @@ class UserRepository {
             Result.failure(e)
         }
     }
-
     // ✅ Cập nhật role user
     suspend fun updateUserRole(userId: String, newRole: String): Result<Unit> {
         return try {

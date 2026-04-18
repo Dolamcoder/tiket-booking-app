@@ -41,7 +41,25 @@ class UserViewModel : ViewModel() {
             }
         }
     }
-
+    fun createUser(user:User, password: String){
+        _isLoading.value=true
+        viewModelScope.launch {
+            val result=userRepository.createUserAuth(user.email, password)
+            result.onSuccess { uid->
+                val newUser= user.copy(id=uid)
+                val createResult=userRepository.createUser(newUser)
+                createResult.onSuccess {
+                    _successMessage.value="Tạo user thành công"
+                    _isLoading.value=false
+                    getAllUsers()
+                }
+                createResult.onFailure { exception->
+                    _errorMessage.value="Lỗi tạo user: ${exception.message}"
+                    _isLoading.value=false
+                }
+            }
+        }
+    }
     // ✅ Xóa user
     fun deleteUser(userId: String) {
         _isLoading.value = true

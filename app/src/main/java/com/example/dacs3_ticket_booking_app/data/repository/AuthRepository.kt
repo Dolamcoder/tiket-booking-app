@@ -12,7 +12,7 @@ class AuthRepository {
     private val db = FirebaseFirestore.getInstance()
     private val userCollection = db.collection("users")
 
-    // ✅ Đăng ký (Register)
+    // ✅ Đăng ký (Register) - Chỉ tạo Auth, chưa tạo Firestore (chống hacker)
     suspend fun register(email: String, fullName: String, password: String): Result<String> {
         return try {
             val authResult = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
@@ -23,21 +23,12 @@ class AuthRepository {
                 val profileUpdate = UserProfileChangeRequest.Builder()
                     .setDisplayName(fullName)
                     .build()
-                
                 user.updateProfile(profileUpdate).await()
                 
-                // Lưu thông tin vào Firestore
-                val userData = User(
-                    id = user.uid,
-                    email = email,
-                    fullName = fullName,
-                    role = "user",
-                    accumulatedMoney = 0.0,
-                    createdAt = System.currentTimeMillis(),
-                    updatedAt = System.currentTimeMillis()
-                )
+                // Gửi email xác thực
+                user.sendEmailVerification().await()
                 
-                userCollection.document(user.uid).set(userData).await()
+                // ⚠️ KHÔNG lưu Firestore ngay - chỉ lưu khi user xác thực email bằng login
                 Result.success(user.uid)
             } else {
                 Result.failure(Exception("Lỗi tạo user"))
@@ -54,17 +45,44 @@ class AuthRepository {
             val user = authResult.user
             
             if (user != null) {
-                // Lấy thông tin user từ Firestore để có role
+                // ⭐ BƯỚC 1: Lấy thông tin user từ Firestore trước
                 val doc = userCollection.document(user.uid).get().await()
                 val userData = doc.toObject(User::class.java)
-                val role = userData?.role ?: "user"
                 
+                // ⭐ BƯỚC 2: Nếu Firestore null → User tự đăng ký, chưa xác thực email
+                if (userData == null) {
+                    if (!user.isEmailVerified) {
+                        user.sendEmailVerification().await()
+                        return Result.failure(Exception("Vui lòng xác thực email trước khi đăng nhập"))
+                    }
+                    
+                    // Email đã xác thực → Tạo user mới vào Firestore
+                    val newUser = User(
+                        id = user.uid,
+                        email = email,
+                        fullName = user.displayName ?: "",
+                        role = "user",
+                        isActivate = true,
+                        createdAt = System.currentTimeMillis(),
+                        updatedAt = System.currentTimeMillis()
+                    )
+                    userCollection.document(user.uid).set(newUser).await()
+                    return Result.success(Pair(user.uid, "user"))
+                }
+                
+                // ⭐ BƯỚC 3: User tồn tại trong Firestore (Admin tạo hoặc từ trước)
+                // Kiểm tra tài khoản bị khóa
+                if (!userData.isActivate) {
+                    return Result.failure(Exception("Tài khoản của bạn đã bị khóa"))
+                }
+                
+                val role = userData.role ?: "user"
                 Result.success(Pair(user.uid, role))
             } else {
                 Result.failure(Exception("Lỗi đăng nhập"))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception("Sai email hoặc mật khẩu"))
         }
     }
 
@@ -88,6 +106,8 @@ class AuthRepository {
     fun isUserLoggedIn(): Boolean {
         return firebaseAuth.currentUser != null
     }
+
+    // ...existing code...
 
     // ✅ Đăng xuất
     fun logout() {

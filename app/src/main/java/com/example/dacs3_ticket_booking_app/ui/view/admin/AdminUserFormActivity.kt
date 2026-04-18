@@ -14,8 +14,6 @@ import com.example.dacs3_ticket_booking_app.data.model.User
 import com.example.dacs3_ticket_booking_app.databinding.ActivityAdminUserFormBinding
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.UserViewModel
 import com.example.dacs3_ticket_booking_app.utils.CloudinaryHelper
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 
 class AdminUserFormActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAdminUserFormBinding
@@ -23,6 +21,7 @@ class AdminUserFormActivity : AppCompatActivity() {
     private var currentUser: User? = null
     private var avatarUrl: String = ""
     private var selectedImageUri: Uri? = null
+    private var isUploading: Boolean = false  // ✅ Flag để kiểm tra upload
 
     // Image picker
     private val imagePickerLauncher = registerForActivityResult(
@@ -97,6 +96,12 @@ class AdminUserFormActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            // ✅ Kiểm tra đang upload ảnh không
+            if (isUploading) {
+                Toast.makeText(this, "Vui lòng chờ tải ảnh hoàn tất", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             if (currentUser != null) {
                 // Update existing user
                 val updatedUser = currentUser!!.copy(
@@ -107,7 +112,7 @@ class AdminUserFormActivity : AppCompatActivity() {
                 )
                 userViewModel.updateUser(updatedUser)
             } else {
-                // Create new user via Firebase Auth
+                // Create new user via ViewModel
                 if (email.isEmpty()) {
                     Toast.makeText(this, "Vui lòng nhập email", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
@@ -115,7 +120,18 @@ class AdminUserFormActivity : AppCompatActivity() {
                 
                 // Tự sinh mật khẩu: [chữ cái cuối cùng của họ][họ đầu tiên][movie@]
                 val password = generatePassword(fullName)
-                createUserWithFirebaseAuth(email, password, fullName, role)
+                
+                val newUser = User(
+                    id = "",
+                    email = email,
+                    fullName = fullName,
+                    role = role,
+                    isActivate = true,
+                    avatar = avatarUrl,
+                    createdAt = System.currentTimeMillis(),
+                    updatedAt = System.currentTimeMillis()
+                )
+                userViewModel.createUser(newUser, password)
             }
         }
 
@@ -141,12 +157,17 @@ class AdminUserFormActivity : AppCompatActivity() {
      }
 
     private fun uploadAvatarToCloudinary(uri: Uri) {
+        isUploading = true  // ✅ Đánh dấu đang upload
+        binding.btnSave.isEnabled = false  // ✅ Disable nút Save
         binding.progressUploadAvatar.visibility = View.VISIBLE
         binding.tvAvatarStatus.text = "Đang tải ảnh lên..."
 
         CloudinaryHelper.uploadImage(uri, this) { url ->
             runOnUiThread {
                 binding.progressUploadAvatar.visibility = View.GONE
+                isUploading = false  // ✅ Upload xong
+                binding.btnSave.isEnabled = true  // ✅ Enable nút Save
+                
                 if (url != null) {
                     avatarUrl = url
                     binding.tvAvatarStatus.text = "✓ Tải ảnh thành công"
@@ -161,42 +182,6 @@ class AdminUserFormActivity : AppCompatActivity() {
         }
     }
 
-    private fun createUserWithFirebaseAuth(email: String, password: String, fullName: String, role: String) {
-        binding.btnSave.isEnabled = false
-        binding.progressUploadAvatar.visibility = View.VISIBLE
-
-        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
-            .addOnSuccessListener { authResult ->
-                val uid = authResult.user?.uid ?: return@addOnSuccessListener
-                val newUser = User(
-                    id = uid,
-                    email = email,
-                    fullName = fullName,
-                    role = role,
-                    avatar = avatarUrl,
-                    createdAt = System.currentTimeMillis(),
-                    updatedAt = System.currentTimeMillis()
-                )
-                FirebaseFirestore.getInstance().collection("users")
-                    .document(uid).set(newUser)
-                    .addOnSuccessListener {
-                        binding.progressUploadAvatar.visibility = View.GONE
-                        binding.btnSave.isEnabled = true
-                        Toast.makeText(this, "Tạo user thành công!", Toast.LENGTH_SHORT).show()
-                        finish()
-                    }
-                    .addOnFailureListener { e ->
-                        binding.progressUploadAvatar.visibility = View.GONE
-                        binding.btnSave.isEnabled = true
-                        Toast.makeText(this, "Lỗi lưu user: ${e.message}", Toast.LENGTH_SHORT).show()
-                    }
-            }
-            .addOnFailureListener { e ->
-                binding.progressUploadAvatar.visibility = View.GONE
-                binding.btnSave.isEnabled = true
-                Toast.makeText(this, "Lỗi tạo tài khoản: ${e.message}", Toast.LENGTH_LONG).show()
-            }
-    }
 
     private fun observeViewModel() {
         userViewModel.successMessage.observe(this) { msg ->

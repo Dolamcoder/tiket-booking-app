@@ -12,12 +12,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dacs3_ticket_booking_app.databinding.ActivityAdminUserListBinding
 import com.example.dacs3_ticket_booking_app.ui.view.adapter.AdminUserAdapter
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.UserViewModel
-import com.google.firebase.auth.FirebaseAuth
 
 class AdminUserListActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAdminUserListBinding
     private lateinit var userViewModel: UserViewModel
     private var allUsers = listOf<com.example.dacs3_ticket_booking_app.data.model.User>()
+    private lateinit var sharedPreferences: android.content.SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,6 +25,7 @@ class AdminUserListActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         userViewModel = ViewModelProvider(this).get(UserViewModel::class.java)
+        sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
 
         setupRecyclerView()
         setupSearchListener()
@@ -73,9 +74,14 @@ class AdminUserListActivity : AppCompatActivity() {
 
     private fun observeViewModel() {
         userViewModel.users.observe(this) { users ->
-            // Lọc bỏ user hiện tại đang đăng nhập
-            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
-            allUsers = users.filter { it.id != currentUserId }
+            // ✅ Lấy userId từ SharedPreferences (stable, không thay đổi)
+            val currentUserId = sharedPreferences.getString("userId", "")
+            
+            allUsers = if (!currentUserId.isNullOrEmpty()) {
+                users.filter { it.id != currentUserId }
+            } else {
+                users
+            }
             
             // Cập nhật adapter với dữ liệu hiện tại (hoặc kết quả tìm kiếm)
             val query = binding.etSearchUser.text.toString().trim().lowercase()
