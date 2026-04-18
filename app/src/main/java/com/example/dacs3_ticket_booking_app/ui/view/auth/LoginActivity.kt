@@ -76,15 +76,16 @@ class LoginActivity : AppCompatActivity() {
                     putBoolean("isLoggedIn", true)
                     apply()
                 }
-                
-                Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show()
-                
-                // ✅ Điều hướng dựa trên role
+
+                Toast.makeText(this, "Đăng nhập thành công!+$role", Toast.LENGTH_SHORT).show()
+
                 when (role) {
                     "admin" -> {
+                        Toast.makeText(this, "Chào mừng Admin!", Toast.LENGTH_SHORT).show()
                         startActivity(Intent(this, AdminActivity::class.java))
                     }
                     else -> {
+                        Toast.makeText(this, "Chào mừng user!", Toast.LENGTH_SHORT).show()
                         startActivity(Intent(this, MainActivity::class.java))
                     }
                 }
