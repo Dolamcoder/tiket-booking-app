@@ -366,7 +366,7 @@ class SeatListActivity : AppCompatActivity() {
             status = "paid",
             qrCodeData = ""
         )
-        
+
         // ✅ 1. Tạo Bill
         billViewModel.addBill(bill)
         
@@ -375,13 +375,13 @@ class SeatListActivity : AppCompatActivity() {
         
         // ✅ 3. Clear locked positions
         lockedPositions.clear()
-        
+
         android.widget.Toast.makeText(
-            this, 
+            this,
             "✅ Đã đặt vé  thành công",
             android.widget.Toast.LENGTH_LONG
         ).show()
-        
+
         binding.root.postDelayed({
             finish()
         }, 2000)

@@ -7,15 +7,28 @@ import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
 
 object CloudinaryHelper {
+    
+    private var isInitialized = false
 
-    // Gọi hàm này 1 lần duy nhất trong Application.onCreate() hoặc tại AdminActivity
+    // ✅ Init chỉ một lần duy nhất
     fun init(context: Context) {
-        val config = mapOf(
-            "cloud_name" to "drmkkrmkw",
-            "api_key"    to "282185291775257",
-            "api_secret" to "wJSLylOsbT_xxTH081CFcDD_sBE"
-        )
-        MediaManager.init(context, config)
+        if (isInitialized) {
+            android.util.Log.d("CloudinaryHelper", "Already initialized, skipping")
+            return
+        }
+        
+        try {
+            val config = mapOf(
+                "cloud_name" to "drmkkrmkw",
+                "api_key"    to "282185291775257",
+                "api_secret" to "wJSLylOsbT_xxTH081CFcDD_sBE"
+            )
+            MediaManager.init(context, config)
+            isInitialized = true
+            android.util.Log.d("CloudinaryHelper", "Cloudinary initialized successfully")
+        } catch (e: Exception) {
+            android.util.Log.e("CloudinaryHelper", "Init error: ${e.message}", e)
+        }
     }
 
     /**
