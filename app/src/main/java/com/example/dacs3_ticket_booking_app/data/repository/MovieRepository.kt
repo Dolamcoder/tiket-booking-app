@@ -152,10 +152,11 @@ class MovieRepository {
     }
 
     // 💰 Cập nhật doanh thu cho phim
-    suspend fun updateRevenue(movieId: String, revenue: Double): Result<Unit> {
+    suspend fun updateRevenue(movieId: String, revenue: Double, ticketsSold:Int): Result<Unit> {
         return try {
             movieCollection.document(movieId).update(
-                "totalRevenue", com.google.firebase.firestore.FieldValue.increment(revenue)
+                "totalRevenue", com.google.firebase.firestore.FieldValue.increment(revenue),
+                "ticketsSold", com.google.firebase.firestore.FieldValue.increment(ticketsSold.toLong())
             ).await()
             Result.success(Unit)
         } catch (e: Exception) {

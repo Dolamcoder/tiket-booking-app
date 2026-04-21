@@ -202,9 +202,9 @@ class MovieViewModel : ViewModel() {
     }
 
     // 💰 Cập nhật doanh thu cho phim
-    fun updateRevenue(movieId: String, revenue: Double) {
+    fun updateRevenue(movieId: String, revenue: Double, ticketsSold: Int) {
         viewModelScope.launch {
-            val result = movieRepository.updateRevenue(movieId, revenue)
+            val result = movieRepository.updateRevenue(movieId, revenue, ticketsSold)
             result.onSuccess {
                 getAllMovies()
             }

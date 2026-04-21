@@ -1,5 +1,6 @@
 package com.example.dacs3_ticket_booking_app.ui.view.client
 
+import android.content.Intent
 import android.icu.text.DecimalFormat
 import android.os.Bundle
 import android.view.View
@@ -16,6 +17,7 @@ import com.example.dacs3_ticket_booking_app.ui.view.adapter.DateAdapter
 import com.example.dacs3_ticket_booking_app.ui.view.adapter.SeatAdapter
 import com.example.dacs3_ticket_booking_app.ui.view.adapter.TimeAdapter
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.BillViewModel
+import com.example.dacs3_ticket_booking_app.ui.viewmodel.MovieViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.RoomViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.ShowtimeViewModel
 import com.example.dacs3_ticket_booking_app.utils.PriceManager
@@ -27,6 +29,7 @@ class SeatListActivity : AppCompatActivity() {
     private lateinit var movie: Movie
     private lateinit var showtimeViewModel: ShowtimeViewModel
     private lateinit var roomViewModel: RoomViewModel
+    private lateinit var movieViewModel: MovieViewModel
     private lateinit var billViewModel: BillViewModel
     private lateinit var firebaseAuth: FirebaseAuth
     
@@ -328,7 +331,7 @@ class SeatListActivity : AppCompatActivity() {
         }
     }
     
-    // ✅ THANH TOÁN - chỉ tạo Bill, không lock nữa
+    // ✅ THANH TOÁN - tạo Bill rồi redirect sang payment
     private fun confirmBooking() {
         if (selectedSeatCount == 0) {
             android.widget.Toast.makeText(this, "Vui lòng chọn ít nhất 1 ghế", android.widget.Toast.LENGTH_SHORT).show()
@@ -363,27 +366,77 @@ class SeatListActivity : AppCompatActivity() {
             seatPositions = selectedSeats,
             price = unitPrice,
             bookingTime = System.currentTimeMillis(),
-            status = "paid",
+            status = "pending",
             qrCodeData = ""
         )
 
-        // ✅ 1. Tạo Bill
+        // ✅ 1. Tạo Bill trong Firestore (nhận ID)
         billViewModel.addBill(bill)
         
-        // ✅ 2. Xác nhận booking (chuyển từ locked → booked)
-        showtimeViewModel.confirmBooking(selectedShowtime.id, selectedSeats)
-        
-        // ✅ 3. Clear locked positions
-        lockedPositions.clear()
+        // ✅ Lắng nghe thành công tạo Bill
+         billViewModel.successMessage.observe(this) { msg ->
+             if (msg.contains("successfully")) {
+                 // Extract bill ID từ message "Bill created successfully (ID: xyz)"
+                 val regex = "\\(ID: ([^)]+)\\)".toRegex()
+                 val matchResult = regex.find(msg)
+                 val billId = matchResult?.groupValues?.get(1) ?: ""
+                 if (billId.isNotEmpty()) {
+                     // ✅ 2. Navigate to Payment Activity
+                     val paymentIntent = Intent(this@SeatListActivity, PaymentActivity::class.java).apply {
+                         putExtra(PaymentActivity.BILL_ID, billId)
+                         putExtra(PaymentActivity.AMOUNT, (unitPrice * selectedSeats.size).toLong())
+                         putExtra(PaymentActivity.SHOWTIME_ID, selectedShowtime.id)
+                         putStringArrayListExtra(PaymentActivity.SELECTED_SEATS, ArrayList(selectedSeats))
+                     }
+                     startActivityForResult(paymentIntent, PAYMENT_REQUEST_CODE)
+                 }
+             }
+         }
+    }
 
-        android.widget.Toast.makeText(
-            this,
-            "✅ Đã đặt vé  thành công",
-            android.widget.Toast.LENGTH_LONG
-        ).show()
+    // ✅ Handle Payment Result
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
 
-        binding.root.postDelayed({
-            finish()
-        }, 2000)
+        if (requestCode == PAYMENT_REQUEST_CODE) {
+            when (resultCode) {
+                RESULT_OK -> {
+                    //update showtime
+                    val showtimeId = data?.getStringExtra(PaymentActivity.SHOWTIME_ID)
+                    val seats = data?.getStringArrayListExtra(PaymentActivity.SELECTED_SEATS)
+
+                    if (showtimeId != null && seats != null) {
+                        showtimeViewModel.confirmBooking(showtimeId, seats)
+                    }
+                    //update status bill
+                    val billId = data?.getStringExtra(PaymentActivity.BILL_ID) ?: ""
+                    billViewModel.updateStatusBill(billId, "paid")
+                    // update daonh thu
+                    movieViewModel.updateRevenue(movie.id, price * selectedSeatCount, selectedSeatCount)
+                    lockedPositions.clear()
+                    android.widget.Toast.makeText(
+                        this,
+                        "Đã đặt vé thành công",
+                        android.widget.Toast.LENGTH_LONG
+                    ).show()
+//                    binding.root.postDelayed({
+//                        finish()
+//                    }, 2000)
+                }
+                RESULT_CANCELED -> {
+                    lockedPositions.clear()
+                    billViewModel.deleteBill(data?.getStringExtra(PaymentActivity.BILL_ID) ?: "")
+                    android.widget.Toast.makeText(
+                        this,
+                        "Thanh toán thất bại. Vui lòng thử lại",
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+    }
+
+    companion object {
+        private const val PAYMENT_REQUEST_CODE = 100
     }
 }

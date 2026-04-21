@@ -87,7 +87,19 @@ class BillViewModel : ViewModel() {
             }
         }
     }
-
+    fun updateStatusBill(billId:String, status: String) {
+        _isLoading.value=true
+        viewModelScope.launch {
+            val result = billRepository.updateBillStatus(billId, "paid")
+            result.onSuccess {
+                _isLoading.value = false
+            }
+            result.onFailure { e ->
+                _errorMessage.value = "Error updating bill: ${e.message}"
+                _isLoading.value = false
+            }
+        }
+    }
     // ✅ Thêm từng ghế vào danh sách booked (gọi từng ghế một)
     fun bookSeat(showtimeId: String, seatPosition: String) {
         _isLoading.value = true
@@ -197,6 +209,22 @@ class BillViewModel : ViewModel() {
             }
             result.onFailure { e ->
                 _errorMessage.value = "Error loading bill: ${e.message}"
+                _isLoading.value = false
+            }
+        }
+    }
+
+    // ✅ Delete bill (for payment failure)
+    fun deleteBill(billId: String) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            val result = billRepository.deleteBill(billId)
+            result.onSuccess {
+                _successMessage.value = "Bill deleted successfully"
+                _isLoading.value = false
+            }
+            result.onFailure { e ->
+                _errorMessage.value = "Error deleting bill: ${e.message}"
                 _isLoading.value = false
             }
         }
