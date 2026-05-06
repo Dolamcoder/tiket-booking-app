@@ -178,11 +178,6 @@ class SeatListActivity : AppCompatActivity() {
             android.widget.Toast.makeText(this, msg, android.widget.Toast.LENGTH_SHORT).show()
         }
 
-        // Theo dõi thông báo thành công từ Bill ViewModel
-        billViewModel.successMessage.observe(this) { msg ->
-            android.util.Log.d("SeatListActivity", "✅ Success: $msg")
-            android.widget.Toast.makeText(this, msg, android.widget.Toast.LENGTH_SHORT).show()
-        }
     }
 
     private fun onDateSelected(screeningDate: String) {

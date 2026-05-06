@@ -160,10 +160,27 @@ class MovieViewModel : ViewModel() {
         }
     }
 
-    // 🔍 Tìm kiếm phim theo tiêu đề
+    // 🔍 Tìm kiếm phim theo tiêu đề (chỉ filter client-side, KHÔNG load DB)
     fun searchMoviesByTitle(query: String) {
-        val currentMovies = _movies.value ?: return
-        val filtered = movieRepository.searchMoviesByTitle(currentMovies, query)
+        // Lấy tất cả phim đã load lúc trước
+        val allMovies = mutableListOf<Movie>().apply {
+            addAll(_nowShowingMovies.value ?: emptyList())
+            addAll(_comingSoonMovies.value ?: emptyList())
+        }
+        
+        // Filter client-side
+        val filtered = if (query.isEmpty()) {
+            allMovies
+        } else {
+            movieRepository.searchMoviesByTitle(allMovies, query)
+        }
+        
+        // 🔥 Cập nhật 2 adapter riêng
+        val nowShowingFiltered = filtered.filter { it.status == "now_showing" }
+        val comingSoonFiltered = filtered.filter { it.status == "coming_soon" }
+        
+        _nowShowingMovies.value = nowShowingFiltered
+        _comingSoonMovies.value = comingSoonFiltered
         _movies.value = filtered
     }
 
