@@ -15,7 +15,7 @@ object ServerConfig {
     private val BASE_URL_MODE = Mode.PHYSICAL
     
     // 📍 Laptop IP address
-    private const val PHYSICAL_DEVICE_IP = "192.168.1.11"
+    private const val PHYSICAL_DEVICE_IP = " 172.26.53.69"
     
     val BASE_URL: String
         get() = when (BASE_URL_MODE) {

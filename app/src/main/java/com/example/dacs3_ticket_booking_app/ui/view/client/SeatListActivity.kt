@@ -18,9 +18,11 @@ import com.example.dacs3_ticket_booking_app.ui.view.adapter.SeatAdapter
 import com.example.dacs3_ticket_booking_app.ui.view.adapter.TimeAdapter
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.BillViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.MovieViewModel
+import com.example.dacs3_ticket_booking_app.ui.viewmodel.QRViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.RoomViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.ShowtimeViewModel
 import com.example.dacs3_ticket_booking_app.utils.PriceManager
+import com.example.dacs3_ticket_booking_app.utils.QRUtils
 import com.example.dacs3_ticket_booking_app.utils.SeatUtils
 import com.google.firebase.auth.FirebaseAuth
 
@@ -31,6 +33,7 @@ class SeatListActivity : AppCompatActivity() {
     private lateinit var roomViewModel: RoomViewModel
     private lateinit var movieViewModel: MovieViewModel
     private lateinit var billViewModel: BillViewModel
+    private lateinit var qrViewModel: QRViewModel
     private lateinit var firebaseAuth: FirebaseAuth
     
     private var selectedScreeningDate: String = ""
@@ -44,6 +47,7 @@ class SeatListActivity : AppCompatActivity() {
     
     private var showtimeListenerRegistration: com.google.firebase.firestore.ListenerRegistration? = null
     private var lockedPositions: MutableSet<String> = mutableSetOf()
+    private var pendingBillId: String = ""  // Store billId khi đang chờ QR generate
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,6 +83,7 @@ class SeatListActivity : AppCompatActivity() {
         showtimeViewModel = ViewModelProvider(this).get(ShowtimeViewModel::class.java)
         roomViewModel = ViewModelProvider(this).get(RoomViewModel::class.java)
         billViewModel = ViewModelProvider(this).get(BillViewModel::class.java)
+        qrViewModel = ViewModelProvider(this).get(QRViewModel::class.java)
         firebaseAuth = FirebaseAuth.getInstance()
     }
 
@@ -178,6 +183,27 @@ class SeatListActivity : AppCompatActivity() {
             android.widget.Toast.makeText(this, msg, android.widget.Toast.LENGTH_SHORT).show()
         }
 
+        // Theo dõi QR code generation
+        qrViewModel.qrCodeData.observe(this) { qrResponse ->
+            if (qrResponse != null && qrResponse.success) {
+                android.util.Log.d("SeatListActivity", "✅ QR generated successfully")
+                // ✅ Navigate to Payment Activity
+                val paymentIntent = Intent(this@SeatListActivity, PaymentActivity::class.java).apply {
+                    putExtra(PaymentActivity.BILL_ID, pendingBillId)
+                    putExtra(PaymentActivity.AMOUNT, (price * selectedSeatCount).toLong())
+                    putExtra(PaymentActivity.SHOWTIME_ID, showtimeViewModel.selectedShowtime.value?.id ?: "")
+                    putStringArrayListExtra(PaymentActivity.SELECTED_SEATS, ArrayList(selectedSeatPositions))
+                    putExtra("qrImageData", qrResponse.qrImage ?: "")
+                    putExtra("qrSignature", qrResponse.qrData?.signature ?: "")
+                }
+                startActivityForResult(paymentIntent, PAYMENT_REQUEST_CODE)
+            }
+        }
+
+        qrViewModel.errorMessage.observe(this) { msg ->
+            android.util.Log.e("SeatListActivity", "❌ QR Error: $msg")
+            android.widget.Toast.makeText(this, "Lỗi tạo QR: $msg", android.widget.Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun onDateSelected(screeningDate: String) {
@@ -354,6 +380,10 @@ class SeatListActivity : AppCompatActivity() {
         android.util.Log.d("SeatListActivity", "💾 Creating bill with ${selectedSeats.size} seats: $selectedSeats")
         
         val unitPrice = PriceManager.getPrice(selectedPriceTier)
+        
+        // ✅ Calculate endTime for QR code
+        val endTime = QRUtils.calculateEndTime(selectedScreeningDate, selectedTimeSlot)
+        
         val bill = Bill(
             id = "",
             userId = userId,
@@ -362,7 +392,9 @@ class SeatListActivity : AppCompatActivity() {
             price = unitPrice,
             bookingTime = System.currentTimeMillis(),
             status = "pending",
-            qrCodeData = ""
+            qrCodeData = "",
+            endTime = endTime,
+            signature = ""
         )
 
         // ✅ 1. Tạo Bill trong Firestore (nhận ID)
@@ -375,16 +407,12 @@ class SeatListActivity : AppCompatActivity() {
                  val regex = "\\(ID: ([^)]+)\\)".toRegex()
                  val matchResult = regex.find(msg)
                  val billId = matchResult?.groupValues?.get(1) ?: ""
-                 if (billId.isNotEmpty()) {
-                     // ✅ 2. Navigate to Payment Activity
-                     val paymentIntent = Intent(this@SeatListActivity, PaymentActivity::class.java).apply {
-                         putExtra(PaymentActivity.BILL_ID, billId)
-                         putExtra(PaymentActivity.AMOUNT, (unitPrice * selectedSeats.size).toLong())
-                         putExtra(PaymentActivity.SHOWTIME_ID, selectedShowtime.id)
-                         putStringArrayListExtra(PaymentActivity.SELECTED_SEATS, ArrayList(selectedSeats))
-                     }
-                     startActivityForResult(paymentIntent, PAYMENT_REQUEST_CODE)
-                 }
+                  if (billId.isNotEmpty()) {
+                      // ✅ 2. Generate QR Code
+                      pendingBillId = billId
+                      android.util.Log.d("SeatListActivity", "📱 Calling API to generate QR: billId=$billId, endTime=$endTime")
+                      qrViewModel.generateQR(billId, endTime)
+                  }
              }
          }
     }

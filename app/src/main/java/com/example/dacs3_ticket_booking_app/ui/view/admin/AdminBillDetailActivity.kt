@@ -1,5 +1,6 @@
 package com.example.dacs3_ticket_booking_app.ui.view.admin
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -63,6 +64,10 @@ class AdminBillDetailActivity : AppCompatActivity() {
 
     private fun setupUI() {
         binding.backBtn.setOnClickListener { finish() }
+        binding.btnScanQR.setOnClickListener {
+            val intent = Intent(this, QRScannerActivity::class.java)
+            startActivity(intent)
+        }
         observeViewModel()
     }
 

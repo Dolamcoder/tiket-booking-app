@@ -421,6 +421,19 @@
                 </LinearLayout>
             </LinearLayout>
 
+            <!-- QR Scanner Button -->
+            <Button
+                android:id="@+id/btnScanQR"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="📱 Quét QR Code"
+                android:textSize="16sp"
+                android:textColor="@android:color/white"
+                android:background="#FF6B6B"
+                android:padding="16dp"
+                android:layout_marginBottom="16dp"
+                android:textStyle="bold" />
+
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="16dp" />

@@ -10,5 +10,7 @@ data class Bill(
     var price: Double = 0.0,                         // Giá vé đơn vị tại thời điểm đặt
     var bookingTime: Long = 0L,
     var status: String = "paid",                     // pending|"paid" | "cancelled"
-    var qrCodeData: String = ""
+    var qrCodeData: String = "",                     // Base64 QR image data
+    var endTime: Long = 0L,                          // QR code expiry time (milliseconds)
+    var signature: String = ""                       // QR signature for verification
 ) : Serializable

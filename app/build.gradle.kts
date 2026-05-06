@@ -57,6 +57,8 @@ dependencies {
     implementation("com.github.ismaeldivita:chip-navigation-bar:1.4.0")
     implementation("com.cloudinary:cloudinary-android:2.3.1")
     implementation(libs.gson)
+    // ZXing for QR Code scanning
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }

@@ -10,12 +10,14 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.dacs3_ticket_booking_app.databinding.ActivityPaymentBinding
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.PaymentViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.BillViewModel
+import com.example.dacs3_ticket_booking_app.ui.viewmodel.QRViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.ShowtimeViewModel
 
 class PaymentActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPaymentBinding
     private lateinit var paymentViewModel: PaymentViewModel
     private lateinit var billViewModel: BillViewModel
+    private lateinit var qrViewModel: QRViewModel
     private lateinit var showtimeViewModel: ShowtimeViewModel
 
     companion object {
@@ -54,6 +56,7 @@ class PaymentActivity : AppCompatActivity() {
     private fun setupViewModels() {
         paymentViewModel = ViewModelProvider(this).get(PaymentViewModel::class.java)
         billViewModel = ViewModelProvider(this).get(BillViewModel::class.java)
+        qrViewModel = ViewModelProvider(this).get(QRViewModel::class.java)
         showtimeViewModel = ViewModelProvider(this).get(ShowtimeViewModel::class.java)
     }
 
@@ -119,6 +122,17 @@ class PaymentActivity : AppCompatActivity() {
             } else {
                 Log.d("PaymentActivity", "❌ Payment failed!")
                 handlePaymentFailure()
+            }
+        }
+
+        // Theo dõi QR code generation từ SeatListActivity
+        qrViewModel.qrCodeData.observe(this) { qrResponse ->
+            if (qrResponse != null && qrResponse.success && qrResponse.qrData != null) {
+                Log.d("PaymentActivity", "✅ QR data received: signature=${qrResponse.qrData.signature}")
+                // Update bill với QR code data
+                val qrImageData = intent.getStringExtra("qrImageData") ?: ""
+                val signature = qrResponse.qrData.signature
+                billViewModel.updateBillQRData(billId, qrImageData, signature)
             }
         }
     }
