@@ -229,4 +229,18 @@ class BillViewModel : ViewModel() {
             }
         }
     }
+    fun updateBillQRData(billId: String, qrCodeData: String) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            val result = billRepository.updateBillQRData(billId, qrCodeData)
+            result.onSuccess {
+                _successMessage.value = "QR code updated successfully"
+                _isLoading.value = false
+            }
+            result.onFailure { e ->
+                _errorMessage.value = "Error updating QR code: ${e.message}"
+                _isLoading.value = false
+            }
+        }
+    }
 }

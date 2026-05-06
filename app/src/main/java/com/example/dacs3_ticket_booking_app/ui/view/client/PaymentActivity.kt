@@ -5,14 +5,17 @@ import android.util.Log
 import android.view.View
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.dacs3_ticket_booking_app.databinding.ActivityPaymentBinding
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.PaymentViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.BillViewModel
+import com.example.dacs3_ticket_booking_app.ui.viewmodel.QRViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.ShowtimeViewModel
 
-class PaymentActivity : AppCompatActivity() {
+class
+PaymentActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPaymentBinding
     private lateinit var paymentViewModel: PaymentViewModel
     private lateinit var billViewModel: BillViewModel
@@ -155,7 +158,11 @@ class PaymentActivity : AppCompatActivity() {
 
     private fun handlePaymentSuccess() {
         Log.d("PaymentActivity", "✅ Processing successful payment...")
-        // ✅ Payment thành công, xác nhận booking
+        
+        // ✅ 1. Update bill status to "paid"
+        billViewModel.updateStatusBill(billId, "paid")
+        
+        // ✅ 2. Confirm booking - thêm ghế vào danh sách booked
         showtimeViewModel.confirmBooking(showtimeId, selectedSeats)
 
         android.widget.Toast.makeText(

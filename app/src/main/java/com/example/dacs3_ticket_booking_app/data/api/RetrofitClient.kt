@@ -18,6 +18,9 @@ object RetrofitClient {
     val paymentService: PaymentService by lazy {
         retrofit.create(PaymentService::class.java)
     }
+    val qrService: QRService by lazy {
+        retrofit.create(QRService::class.java)
+    }
 }
 
 

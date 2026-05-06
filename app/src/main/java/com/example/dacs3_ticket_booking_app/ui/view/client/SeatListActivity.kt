@@ -19,8 +19,10 @@ import com.example.dacs3_ticket_booking_app.ui.view.adapter.TimeAdapter
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.BillViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.MovieViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.RoomViewModel
+import com.example.dacs3_ticket_booking_app.ui.viewmodel.QRViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.ShowtimeViewModel
 import com.example.dacs3_ticket_booking_app.utils.PriceManager
+import com.example.dacs3_ticket_booking_app.utils.QRUtils
 import com.example.dacs3_ticket_booking_app.utils.SeatUtils
 import com.google.firebase.auth.FirebaseAuth
 
@@ -32,6 +34,7 @@ class SeatListActivity : AppCompatActivity() {
     private lateinit var movieViewModel: MovieViewModel
     private lateinit var billViewModel: BillViewModel
     private lateinit var firebaseAuth: FirebaseAuth
+    private lateinit var qrViewModel: QRViewModel
     
     private var selectedScreeningDate: String = ""
     private var selectedTimeSlot: String = ""
@@ -41,9 +44,11 @@ class SeatListActivity : AppCompatActivity() {
     private var selectedSeatCount: Int = 0
     private var selectedSeatPositions: List<String> = emptyList()
     private var seatAdapter: SeatAdapter? = null
-    
+    private var pendingBillId: String = ""  // Store billId khi đang chờ QR generate
     private var showtimeListenerRegistration: com.google.firebase.firestore.ListenerRegistration? = null
     private var lockedPositions: MutableSet<String> = mutableSetOf()
+    private var billSuccessObserverAdded = false
+    private var qrObserverAdded = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,6 +85,8 @@ class SeatListActivity : AppCompatActivity() {
         roomViewModel = ViewModelProvider(this).get(RoomViewModel::class.java)
         billViewModel = ViewModelProvider(this).get(BillViewModel::class.java)
         firebaseAuth = FirebaseAuth.getInstance()
+        movieViewModel = ViewModelProvider(this).get(MovieViewModel::class.java)
+        qrViewModel = ViewModelProvider(this).get(QRViewModel::class.java)
     }
 
     private fun backOnClick() {
@@ -176,6 +183,54 @@ class SeatListActivity : AppCompatActivity() {
         billViewModel.errorMessage.observe(this) { msg ->
             android.util.Log.e("SeatListActivity", "❌ Bill Error: $msg")
             android.widget.Toast.makeText(this, msg, android.widget.Toast.LENGTH_SHORT).show()
+        }
+
+        // ✅ Observer thành công tạo Bill - chỉ thêm một lần
+        if (!billSuccessObserverAdded) {
+            billViewModel.successMessage.observe(this) { msg ->
+                if (msg.contains("successfully")) {
+                    // Extract bill ID từ message "Bill created successfully (ID: xyz)"
+                    val regex = "\\(ID: ([^)]+)\\)".toRegex()
+                    val matchResult = regex.find(msg)
+                    val billId = matchResult?.groupValues?.get(1) ?: ""
+                    if (billId.isNotEmpty()) {
+                        pendingBillId = billId
+                        val selectedShowtime = showtimeViewModel.selectedShowtime.value
+                        if (selectedShowtime != null) {
+                            val endTime = QRUtils.calculateEndTime(selectedScreeningDate, selectedTimeSlot)
+                            android.util.Log.d("SeatListActivity", "📱 Calling API to generate QR: billId=$billId, endTime=$endTime")
+                            qrViewModel.generateQR(billId, endTime)
+                        }
+                    }
+                }
+            }
+            billSuccessObserverAdded = true
+        }
+
+        // ✅ Observer QR response - chỉ thêm một lần
+        if (!qrObserverAdded) {
+            qrViewModel.qrCodeData.observe(this) { qrResponse ->
+                if (qrResponse != null && qrResponse.success) {
+                    android.util.Log.d("SeatListActivity", "✅ QR generated successfully")
+                    // ✅ Navigate to Payment Activity
+                    billViewModel.updateBillQRData(pendingBillId, qrResponse.qrImage?:"")
+                    val paymentIntent = Intent(this@SeatListActivity, PaymentActivity::class.java).apply {
+                        putExtra(PaymentActivity.BILL_ID, pendingBillId)
+                        putExtra(PaymentActivity.AMOUNT, (price * selectedSeatCount).toLong())
+                        putExtra(PaymentActivity.SHOWTIME_ID, showtimeViewModel.selectedShowtime.value?.id ?: "")
+                        putStringArrayListExtra(PaymentActivity.SELECTED_SEATS, ArrayList(selectedSeatPositions))
+                        putExtra("qrImageData", qrResponse.qrImage ?: "")
+                        putExtra("qrSignature", qrResponse.qrData?.signature ?: "")
+                    }
+                    startActivityForResult(paymentIntent, PAYMENT_REQUEST_CODE)
+                }
+            }
+            qrObserverAdded = true
+        }
+
+        qrViewModel.errorMessage.observe(this) { msg ->
+            android.util.Log.e("SeatListActivity", "❌ QR Error: $msg")
+            android.widget.Toast.makeText(this, "Lỗi tạo QR: $msg", android.widget.Toast.LENGTH_SHORT).show()
         }
 
     }
@@ -365,28 +420,9 @@ class SeatListActivity : AppCompatActivity() {
             qrCodeData = ""
         )
 
-        // ✅ 1. Tạo Bill trong Firestore (nhận ID)
+        // ✅ Tạo Bill trong Firestore (nhận ID)
+        // Observer sẽ tự động trigger khi addBill() thành công
         billViewModel.addBill(bill)
-        
-        // ✅ Lắng nghe thành công tạo Bill
-         billViewModel.successMessage.observe(this) { msg ->
-             if (msg.contains("successfully")) {
-                 // Extract bill ID từ message "Bill created successfully (ID: xyz)"
-                 val regex = "\\(ID: ([^)]+)\\)".toRegex()
-                 val matchResult = regex.find(msg)
-                 val billId = matchResult?.groupValues?.get(1) ?: ""
-                 if (billId.isNotEmpty()) {
-                     // ✅ 2. Navigate to Payment Activity
-                     val paymentIntent = Intent(this@SeatListActivity, PaymentActivity::class.java).apply {
-                         putExtra(PaymentActivity.BILL_ID, billId)
-                         putExtra(PaymentActivity.AMOUNT, (unitPrice * selectedSeats.size).toLong())
-                         putExtra(PaymentActivity.SHOWTIME_ID, selectedShowtime.id)
-                         putStringArrayListExtra(PaymentActivity.SELECTED_SEATS, ArrayList(selectedSeats))
-                     }
-                     startActivityForResult(paymentIntent, PAYMENT_REQUEST_CODE)
-                 }
-             }
-         }
     }
 
     // ✅ Handle Payment Result
@@ -396,17 +432,8 @@ class SeatListActivity : AppCompatActivity() {
         if (requestCode == PAYMENT_REQUEST_CODE) {
             when (resultCode) {
                 RESULT_OK -> {
-                    //update showtime
-                    val showtimeId = data?.getStringExtra(PaymentActivity.SHOWTIME_ID)
-                    val seats = data?.getStringArrayListExtra(PaymentActivity.SELECTED_SEATS)
-
-                    if (showtimeId != null && seats != null) {
-                        showtimeViewModel.confirmBooking(showtimeId, seats)
-                    }
-                    //update status bill
-                    val billId = data?.getStringExtra(PaymentActivity.BILL_ID) ?: ""
-                    billViewModel.updateStatusBill(billId, "paid")
-                    // update daonh thu
+                    // ✅ Payment thành công - Bill status & Showtime đã được update ở PaymentActivity
+                    // Chỉ cần update revenue
                     movieViewModel.updateRevenue(movie.id, price * selectedSeatCount, selectedSeatCount)
                     lockedPositions.clear()
                     android.widget.Toast.makeText(
@@ -414,13 +441,14 @@ class SeatListActivity : AppCompatActivity() {
                         "Đã đặt vé thành công",
                         android.widget.Toast.LENGTH_LONG
                     ).show()
-//                    binding.root.postDelayed({
-//                        finish()
-//                    }, 2000)
+                    // ✅ Delay một chút rồi quay lại
+                    binding.root.postDelayed({
+                        finish()
+                    }, 1500)
                 }
                 RESULT_CANCELED -> {
+                    // ❌ Payment thất bại - Bill & ghế đã được xóa/unlock ở PaymentActivity
                     lockedPositions.clear()
-                    billViewModel.deleteBill(data?.getStringExtra(PaymentActivity.BILL_ID) ?: "")
                     android.widget.Toast.makeText(
                         this,
                         "Thanh toán thất bại. Vui lòng thử lại",

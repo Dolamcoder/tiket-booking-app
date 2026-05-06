@@ -134,4 +134,16 @@ class BillRepository {
             Result.failure(e)
         }
     }
+    suspend fun updateBillQRData(billId: String, qrCodeData: String): Result<Unit> {
+        return try {
+            billCollection.document(billId).update(
+                mapOf(
+                    "qrCodeData" to qrCodeData,
+                )
+            ).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

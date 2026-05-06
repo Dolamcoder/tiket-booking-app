@@ -15,13 +15,13 @@ object ServerConfig {
     private val BASE_URL_MODE = Mode.PHYSICAL
     
     // 📍 Laptop IP address
-    private const val PHYSICAL_DEVICE_IP = "192.168.1.11"
+    private const val PHYSICAL_DEVICE_IP = "192.168.1.4"
     
     val BASE_URL: String
         get() = when (BASE_URL_MODE) {
             Mode.EMULATOR -> "http://10.0.2.2:3000"
             Mode.PHYSICAL -> "http://$PHYSICAL_DEVICE_IP:3000"
-            Mode.LOCALHOST -> "http://localhost:3000"
+            Mode.LOCALHOST -> "http://192.168.1.4/:3000"
         }
     
     fun getCurrentMode(): String = BASE_URL_MODE.name
