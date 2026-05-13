@@ -4,17 +4,25 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.example.dacs3_ticket_booking_app.databinding.ActivityUserBillDetailBinding
+import com.example.dacs3_ticket_booking_app.data.api.GenerateQRRequest
+import com.example.dacs3_ticket_booking_app.data.api.RetrofitClient
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.BillViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.MovieViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.RoomViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.ShowtimeViewModel
 import com.example.dacs3_ticket_booking_app.utils.PriceManager
 import com.example.dacs3_ticket_booking_app.utils.SeatUtils
-import java.text.NumberFormat
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import android.graphics.BitmapFactory
+import android.util.Base64
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -26,8 +34,6 @@ class UserBillDetailActivity : AppCompatActivity() {
     private lateinit var roomViewModel: RoomViewModel
     
     private val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-    private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-    private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,6 +69,26 @@ class UserBillDetailActivity : AppCompatActivity() {
 
     private fun setupUI() {
         binding.backBtn.setOnClickListener { finish() }
+        
+        // Set up QR code container click listener
+        binding.qrCodeContainer.setOnClickListener {
+            val bill = billViewModel.billDetail.value
+            if (bill != null) {
+                generateAndDisplayQRCode(bill.id)
+            } else {
+                Toast.makeText(this, "Bill data not loaded yet", Toast.LENGTH_SHORT).show()
+            }
+        }
+        
+        // Set up cancel bill button click listener
+        binding.btnCancelBill.setOnClickListener {
+            val bill = billViewModel.billDetail.value
+            if (bill != null) {
+                showCancelConfirmationDialog(bill.id)
+            } else {
+                Toast.makeText(this, "Bill data not loaded yet", Toast.LENGTH_SHORT).show()
+            }
+        }
         
         observeBillViewModel()
     }
@@ -154,6 +180,100 @@ class UserBillDetailActivity : AppCompatActivity() {
             Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
         }
     }
+
+    private fun generateAndDisplayQRCode(billId: String) {
+        MainScope().launch {
+            try {
+                // Show loading
+                binding.qrProgressBar.visibility = View.VISIBLE
+                binding.tvQrPlaceholder.visibility = View.GONE
+
+                val bill = billViewModel.billDetail.value ?: return@launch
+                
+                // Calculate endTime (24 hours from booking time)
+                val endTime = bill.bookingTime + (24 * 60 * 60 * 1000)
+
+                // Call backend API to generate QR code
+                val request = GenerateQRRequest(billId, endTime)
+                val response = withContext(Dispatchers.IO) {
+                    RetrofitClient.qrService.generateQR(request)
+                }
+
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val qrImage = response.body()?.qrImage
+                    if (!qrImage.isNullOrEmpty()) {
+                        // Decode base64 and display
+                        try {
+                            val decodedBytes = Base64.decode(qrImage.substringAfter(","), Base64.DEFAULT)
+                            val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+                            
+                            binding.apply {
+                                ivQrCode.setImageBitmap(bitmap)
+                                ivQrCode.visibility = View.VISIBLE
+                                tvQrPlaceholder.visibility = View.GONE
+                                qrProgressBar.visibility = View.GONE
+                            }
+                            
+                            // Save QR data to bill
+                            billViewModel.updateBillQRData(billId, qrImage)
+                        } catch (e: Exception) {
+                            Toast.makeText(this@UserBillDetailActivity, 
+                                "Error displaying QR code: ${e.message}", 
+                                Toast.LENGTH_SHORT).show()
+                            binding.apply {
+                                qrProgressBar.visibility = View.GONE
+                                tvQrPlaceholder.visibility = View.VISIBLE
+                            }
+                        }
+                    } else {
+                        Toast.makeText(this@UserBillDetailActivity, 
+                            "QR code data is empty", 
+                            Toast.LENGTH_SHORT).show()
+                        binding.apply {
+                            qrProgressBar.visibility = View.GONE
+                            tvQrPlaceholder.visibility = View.VISIBLE
+                        }
+                    }
+                } else {
+                    val errorMsg = response.body()?.error ?: "Failed to generate QR code"
+                    Toast.makeText(this@UserBillDetailActivity, 
+                        errorMsg, 
+                        Toast.LENGTH_SHORT).show()
+                    binding.apply {
+                        qrProgressBar.visibility = View.GONE
+                        tvQrPlaceholder.visibility = View.VISIBLE
+                    }
+                }
+            } catch (e: Exception) {
+                binding.apply {
+                    qrProgressBar.visibility = View.GONE
+                    tvQrPlaceholder.visibility = View.VISIBLE
+                }
+                Toast.makeText(this@UserBillDetailActivity, 
+                    "Error: ${e.message}", 
+                    Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun showCancelConfirmationDialog(billId: String) {
+        AlertDialog.Builder(this)
+            .setTitle("Xác Nhận Hủy Hóa Đơn")
+            .setMessage("Bạn có chắc chắn muốn hủy hóa đơn này không? Hành động này không thể hoàn tác.")
+            .setPositiveButton("Có, Hủy Ngay") { _, _ ->
+                cancelBill(billId)
+            }
+            .setNegativeButton("Không, Giữ Lại", null)
+            .show()
+    }
+
+    private fun cancelBill(billId: String) {
+        billViewModel.cancelBill(billId)
+        
+        // Observe success and finish activity
+        billViewModel.successMessage.observe(this) { msg ->
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+            finish()
+        }
+    }
 }
-
-

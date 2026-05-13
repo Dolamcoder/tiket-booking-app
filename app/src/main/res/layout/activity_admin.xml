@@ -115,6 +115,17 @@
 
                 <include layout="@layout/item_admin_dashboard_revenue" />
             </androidx.cardview.widget.CardView>
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardQrCode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardBackgroundColor="@color/admin_surface"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp">
+
+                <include layout="@layout/item_admin_dashboard_qrcode" />
+            </androidx.cardview.widget.CardView>
         </LinearLayout>
     </ScrollView>
 

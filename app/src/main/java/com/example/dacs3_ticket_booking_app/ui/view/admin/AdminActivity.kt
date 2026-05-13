@@ -57,6 +57,9 @@ class AdminActivity : AppCompatActivity() {
         binding.cardRevenue.setOnClickListener {
             startActivity(Intent(this, AdminRevenueActivity::class.java))
         }
+        binding.cardQrCode.setOnClickListener {
+            startActivity(Intent(this, AdminQRScanActivity::class.java))
+        }
     }
 
     private fun logout() {
