@@ -112,6 +112,43 @@ class MovieRepository {
         return movies.filter { it.title.contains(query, ignoreCase = true) }
     }
 
+    // 🔍 Tìm kiếm phim nâng cao (Client-side filtering - nhiều tham số)
+    fun advancedSearchMovies(
+        movies: List<Movie>,
+        title: String? = null,
+        description: String? = null,
+        genres: List<String>? = null,
+        castName: String? = null
+    ): List<Movie> {
+        var filtered = movies
+
+        // Filter theo title (contains, case-insensitive)
+        if (!title.isNullOrBlank()) {
+            filtered = filtered.filter { it.title.contains(title, ignoreCase = true) }
+        }
+
+        // Filter theo description (contains, case-insensitive)
+        if (!description.isNullOrBlank()) {
+            filtered = filtered.filter { it.description.contains(description, ignoreCase = true) }
+        }
+
+        // Filter theo genres - phim phải chứa ÍT NHẤT 1 thể loại được chọn
+        if (!genres.isNullOrEmpty()) {
+            filtered = filtered.filter { movie ->
+                movie.genres.any { genre -> genres.contains(genre) }
+            }
+        }
+
+        // Filter theo cast name (contains, case-insensitive trong danh sách cast)
+        if (!castName.isNullOrBlank()) {
+            filtered = filtered.filter { movie ->
+                movie.casts.any { cast -> cast.name.contains(castName, ignoreCase = true) }
+            }
+        }
+
+        return filtered
+    }
+
     // Sort phim theo ten (A-Z)
     fun sortMoviesByTitle(movies: List<Movie>, ascending: Boolean = true): List<Movie> {
         return if (ascending) {

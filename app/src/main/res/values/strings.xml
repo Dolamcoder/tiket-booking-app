@@ -24,4 +24,8 @@
         <item>Doanh thu theo phim</item>
         <item>Doanh thu theo phòng</item>
     </string-array>
+
+    <!-- Search Movie -->
+    <string name="zero_movies">0 phim</string>
+    <string name="movie_count">%1$d phim</string>
 </resources>

@@ -47,12 +47,10 @@ class AdminUserFormActivity : AppCompatActivity() {
         if (currentUser != null) {
             populateForm(currentUser!!)
             binding.titleBar.text = "Chỉnh sửa User"
-            binding.btnDelete.visibility = View.GONE  // Xóa nút delete khi update
             binding.etEmail.isEnabled = false
             binding.layoutPassword.visibility = View.GONE
         } else {
             binding.titleBar.text = "Thêm User mới"
-            binding.btnDelete.visibility = View.GONE
             binding.etEmail.isEnabled = true
             binding.layoutPassword.visibility = View.GONE  // Luôn ẩn password
         }

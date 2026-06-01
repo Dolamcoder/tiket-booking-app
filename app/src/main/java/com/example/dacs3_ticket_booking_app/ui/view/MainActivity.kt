@@ -23,6 +23,7 @@ import com.example.dacs3_ticket_booking_app.data.model.Banner
 import com.example.dacs3_ticket_booking_app.databinding.ActivityMainBinding
 import com.example.dacs3_ticket_booking_app.ui.view.adaper.MovieAdapter
 import com.example.dacs3_ticket_booking_app.ui.view.client.ProfileActivity
+import com.example.dacs3_ticket_booking_app.ui.view.client.SearchMovieActivity
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.BannerViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.MovieViewModel
 import com.example.dacs3_ticket_booking_app.utils.SpeechToTextUtil
@@ -68,14 +69,14 @@ class MainActivity : AppCompatActivity() {
                     R.id.profile -> {
                         startActivity(Intent(this@MainActivity, ProfileActivity::class.java))
                     }
+                    R.id.search -> {
+                        startActivity(Intent(this@MainActivity, SearchMovieActivity::class.java))
+                    }
                     R.id.explorer -> {
                         // TODO: Xử lý Explorer
                     }
                     R.id.favorite -> {
                         // TODO: Xử lý Favorite
-                    }
-                    R.id.cart -> {
-                        // TODO: Xử lý Cart
                     }
                 }
             }
@@ -120,7 +121,7 @@ class MainActivity : AppCompatActivity() {
         setupSearchUI()
     }
     
-    // ✅ Setup Search UI
+     // ✅ Setup Search UI
     private fun setupSearchUI() {
         // Lấy reference đến EditText search
         binding.searchEditText.setOnFocusChangeListener { view, hasFocus ->
@@ -130,6 +131,11 @@ class MainActivity : AppCompatActivity() {
                     binding.searchEditText.text.clear()
                 }
             }
+        }
+        
+        // ✅ Click on search bar to open advanced search
+        binding.searchEditText.setOnClickListener {
+            startActivity(Intent(this@MainActivity, SearchMovieActivity::class.java))
         }
         
         // 🔥 THÊM TextWatcher để auto-search khi nhập text

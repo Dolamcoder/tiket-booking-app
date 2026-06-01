@@ -6,10 +6,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dacs3_ticket_booking_app.data.model.Movie
 import com.example.dacs3_ticket_booking_app.data.repository.MovieRepository
+import com.example.dacs3_ticket_booking_app.data.repository.ShowtimeRepository
 import kotlinx.coroutines.launch
 
 class MovieViewModel : ViewModel() {
     private val movieRepository = MovieRepository()
+    private val showtimeRepository = ShowtimeRepository()
 
     // LiveData for all movies
     private val _movies = MutableLiveData<List<Movie>>()
@@ -38,6 +40,10 @@ class MovieViewModel : ViewModel() {
     // LiveData for success message
     private val _successMessage = MutableLiveData<String>()
     val successMessage: LiveData<String> = _successMessage
+
+    // 🔍 LiveData cho kết quả tìm kiếm nâng cao
+    private val _searchResults = MutableLiveData<List<Movie>>()
+    val searchResults: LiveData<List<Movie>> = _searchResults
 
     // Get all movies
     fun getAllMovies() {
@@ -257,6 +263,60 @@ class MovieViewModel : ViewModel() {
             result.onFailure { e ->
                 _errorMessage.value = "Error loading movie: ${e.message}"
                 _isLoading.value = false
+            }
+        }
+    }
+
+    // 🔍 Tìm kiếm phim nâng cao - nhiều tham số
+    fun advancedSearch(
+        title: String?,
+        description: String?,
+        genres: List<String>?,
+        castName: String?,
+        priceTier: String? // "morning" | "afternoon" | "evening" | null (tất cả)
+    ) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            try {
+                // 1. Load tất cả phim từ Firestore
+                val moviesResult = movieRepository.getAllMovies()
+                val allMovies = moviesResult.getOrThrow()
+
+                // 2. Filter client-side bằng advancedSearchMovies
+                var filtered = movieRepository.advancedSearchMovies(
+                    movies = allMovies,
+                    title = title,
+                    description = description,
+                    genres = genres,
+                    castName = castName
+                )
+
+                // 3. Nếu có priceTier → cross-reference với Showtimes
+                if (!priceTier.isNullOrBlank()) {
+                    val showtimesResult = showtimeRepository.getAllShowtimes()
+                    val allShowtimes = showtimesResult.getOrThrow()
+
+                    // Lọc showtimes có priceTier match
+                    val matchingMovieIds = allShowtimes
+                        .filter { it.priceTier == priceTier }
+                        .map { it.movieId }
+                        .distinct()
+
+                    // Filter kết quả chỉ giữ phim có suất chiếu phù hợp
+                    filtered = filtered.filter { it.id in matchingMovieIds }
+                }
+
+                // 4. Sắp xếp theo ticketsSold giảm dần (mặc định)
+                filtered = filtered.sortedByDescending { it.ticketsSold }
+
+                // 5. Post kết quả
+                _searchResults.value = filtered
+                _isLoading.value = false
+
+            } catch (e: Exception) {
+                _errorMessage.value = "Lỗi tìm kiếm: ${e.message}"
+                _isLoading.value = false
+                _searchResults.value = emptyList()
             }
         }
     }

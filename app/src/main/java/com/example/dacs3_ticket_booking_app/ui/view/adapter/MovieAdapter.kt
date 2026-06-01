@@ -13,7 +13,10 @@ import com.example.dacs3_ticket_booking_app.data.model.Movie
 import com.example.dacs3_ticket_booking_app.databinding.ViewholderFilmBinding
 import com.example.dacs3_ticket_booking_app.ui.view.DetailMovieActivity
 
-class MovieAdapter(private val items: MutableList<Movie>): RecyclerView.Adapter<MovieAdapter.ViewHolder>() {
+class MovieAdapter(
+    private val items: MutableList<Movie>,
+    private val onMovieClick: ((Movie) -> Unit)? = null
+): RecyclerView.Adapter<MovieAdapter.ViewHolder>() {
     private var context: Context?=null
     inner class ViewHolder(private val binding: ViewholderFilmBinding): RecyclerView.ViewHolder(binding.root) {
         fun bind(movie: Movie) {
@@ -27,9 +30,13 @@ class MovieAdapter(private val items: MutableList<Movie>): RecyclerView.Adapter<
             
             // Add click listener to navigate to detail movie
             binding.root.setOnClickListener {
-                val intent = Intent(context, DetailMovieActivity::class.java)
-                intent.putExtra("MOVIE_ID", movie.id)
-                context?.startActivity(intent)
+                if (onMovieClick != null) {
+                    onMovieClick.invoke(movie)
+                } else {
+                    val intent = Intent(context, DetailMovieActivity::class.java)
+                    intent.putExtra("MOVIE_ID", movie.id)
+                    context?.startActivity(intent)
+                }
             }
         }
     }
@@ -47,4 +54,11 @@ class MovieAdapter(private val items: MutableList<Movie>): RecyclerView.Adapter<
     }
 
     override fun getItemCount():Int=items.size
+
+    // Update movies in the adapter
+    fun updateMovies(newMovies: MutableList<Movie>) {
+        items.clear()
+        items.addAll(newMovies)
+        notifyDataSetChanged()
+    }
 }

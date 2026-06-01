@@ -19,14 +19,13 @@
             android:id="@+id/backBtn"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:src="@drawable/btn_1"
+            android:background="@drawable/rounded_button_semi_black"
             android:layout_marginTop="12dp"
             android:contentDescription="Back"
             android:tint="@android:color/white"
             android:clickable="true"
             app:srcCompat="@drawable/back_dark"
             android:focusable="true" />
-
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -217,10 +216,10 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:src="@drawable/btn_1"
+            android:background="@drawable/rounded_button_semi_black"
             android:contentDescription="Logout"
             app:srcCompat="@drawable/back_dark"
             android:tint="@android:color/white" />
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -20,21 +20,25 @@
             android:layout_marginBottom="28dp"
             android:paddingTop="20dp">
 
-            <ImageButton
+            <ImageView
                 android:id="@+id/backBtn"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:src="@drawable/ic_arrow_back"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                app:tint="@color/admin_text_primary"
-                android:contentDescription="@string/back" />
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="Back"
+                android:padding="8dp"
+                android:background="@drawable/rounded_button_semi_black"
+                android:tint="@android:color/white"
+                android:scaleType="centerInside"
+                app:srcCompat="@drawable/back_dark"
+                android:clickable="true"
+                android:focusable="true" />
 
             <TextView
                 android:id="@+id/titleBar"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="User Form"
+                android:text="Tạo mới người dùng"
                 android:textColor="@color/admin_text_primary"
                 android:textStyle="bold"
                 android:textSize="22sp"
@@ -54,10 +58,9 @@
                 android:id="@+id/ivUserAvatar"
                 android:layout_width="120dp"
                 android:layout_height="120dp"
-                android:src="@drawable/btn_1"
                 android:scaleType="centerCrop"
                 android:contentDescription="@string/user_avatar"
-                android:background="@drawable/admin_icon_circle"
+                android:background="@drawable/profile"
                 android:clickable="true"
                 android:focusable="true"
                 android:layout_marginBottom="12dp"
@@ -84,11 +87,11 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/full_name"
+            android:layout_marginBottom="8dp"
+            android:text="Họ và tên"
             android:textColor="@color/admin_text_primary"
-            android:textStyle="bold"
             android:textSize="14sp"
-            android:layout_marginBottom="8dp" />
+            android:textStyle="bold" />
 
         <EditText
             android:id="@+id/etFullName"
@@ -109,7 +112,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/email"
+            android:text="Email"
             android:textColor="@color/admin_text_primary"
             android:textStyle="bold"
             android:textSize="14sp"
@@ -160,9 +163,9 @@
                 android:layout_width="0dp"
                 android:layout_height="50dp"
                 android:layout_weight="1"
-                android:text="@string/role_user"
+                android:text="User"
                 android:textColor="@color/admin_text_primary"
-                android:textSize="13sp"
+                android:textSize="16sp"
                 android:gravity="center_vertical"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
@@ -174,9 +177,9 @@
                 android:layout_width="0dp"
                 android:layout_height="50dp"
                 android:layout_weight="1"
-                android:text="@string/role_admin"
+                android:text="Admin"
                 android:textColor="@color/admin_text_primary"
-                android:textSize="13sp"
+                android:textSize="16sp"
                 android:gravity="center_vertical"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
@@ -186,27 +189,15 @@
         <!-- Save Button -->
         <Button
             android:id="@+id/btnSave"
-            android:layout_width="match_parent"
+            android:layout_width="100dp"
             android:layout_height="50dp"
-            android:text="@string/save"
+            android:layout_gravity="center"
+            android:text="Lưu"
             android:textStyle="bold"
             android:textColor="@color/admin_text_primary"
-            android:textSize="15sp"
+            android:textSize="16sp"
             android:background="@drawable/admin_button_primary"
             android:layout_marginBottom="12dp"
-            android:stateListAnimator="@animator/button_press" />
-
-        <!-- Delete Button (Hidden) -->
-        <Button
-            android:id="@+id/btnDelete"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:text="@string/delete"
-            android:textStyle="bold"
-            android:textColor="@color/admin_text_primary"
-            android:textSize="15sp"
-            android:background="@drawable/admin_button_danger"
-            android:visibility="gone"
             android:stateListAnimator="@animator/button_press" />
 
     </LinearLayout>
