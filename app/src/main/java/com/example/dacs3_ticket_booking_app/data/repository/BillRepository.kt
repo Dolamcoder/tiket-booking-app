@@ -62,11 +62,11 @@ class BillRepository {
         }
     }
 
-    // ✅ Get bills by userId
     suspend fun getBillsByUser(userId: String): Result<List<Bill>> {
         return try {
             val snapshot = billCollection
                 .whereEqualTo("userId", userId)
+                .whereEqualTo("status", "paid")
                 .get()
                 .await()
             val list = snapshot.toObjects(Bill::class.java)
@@ -90,7 +90,6 @@ class BillRepository {
         }
     }
 
-    // ✅ Update bill status (e.g. paid -> cancelled)
     suspend fun updateBillStatus(billId: String, status: String): Result<Unit> {
         return try {
             billCollection.document(billId).update("status", status).await()
@@ -100,7 +99,6 @@ class BillRepository {
         }
     }
 
-    // ✅ Delete bill
     suspend fun deleteBill(billId: String): Result<Unit> {
         return try {
             billCollection.document(billId).delete().await()

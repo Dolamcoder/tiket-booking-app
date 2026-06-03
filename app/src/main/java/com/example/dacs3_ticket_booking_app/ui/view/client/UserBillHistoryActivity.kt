@@ -25,13 +25,10 @@ class UserBillHistoryActivity : AppCompatActivity() {
         firebaseAuth = FirebaseAuth.getInstance()
         billViewModel = ViewModelProvider(this).get(BillViewModel::class.java)
 
-        // ✅ Nút quay lại
         binding.backBtn.setOnClickListener { finish() }
 
-        // ✅ Setup RecyclerView
         binding.recyclerViewBills.layoutManager = LinearLayoutManager(this)
 
-        // ✅ Lấy userId từ Firebase
         val userId = firebaseAuth.currentUser?.uid
         if (userId != null) {
             observeViewModel()

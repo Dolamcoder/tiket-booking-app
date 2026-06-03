@@ -100,7 +100,6 @@ class BillViewModel : ViewModel() {
             }
         }
     }
-    // ✅ Thêm từng ghế vào danh sách booked (gọi từng ghế một)
     fun bookSeat(showtimeId: String, seatPosition: String) {
         _isLoading.value = true
         viewModelScope.launch {
@@ -116,7 +115,6 @@ class BillViewModel : ViewModel() {
         }
     }
     
-    // ✅ Cũ: bookSeats (thêm nhiều ghế) - GIỮ cho compatibility
     fun bookSeats(showtimeId: String, seatPositions: List<String>) {
         _isLoading.value = true
         viewModelScope.launch {

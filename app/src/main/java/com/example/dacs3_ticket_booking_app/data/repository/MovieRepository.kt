@@ -26,7 +26,7 @@ class MovieRepository {
     // ✅ Lấy tất cả phim
     suspend fun getAllMovies(): Result<List<Movie>> {
         return try {
-            val snapshot = movieCollection.get().await()
+            val snapshot = movieCollection.get().await();
             val movies = snapshot.toObjects(Movie::class.java)
             Result.success(movies)
 

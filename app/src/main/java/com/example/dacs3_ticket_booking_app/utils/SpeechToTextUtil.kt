@@ -6,76 +6,127 @@ import android.speech.RecognizerIntent
 import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.content.ContextCompat
+import java.util.Locale
 
-/**
- * Utility class để handle Google Speech to Text recognition
- * Sử dụng Google Speech Recognition API (miễn phí)
- */
 class SpeechToTextUtil(
     private val context: Context,
     private val onResult: (String) -> Unit,
-    private val onError: (String) -> Unit = { }
+    private val onError: (String) -> Unit = {}
 ) {
+
     companion object {
         private const val TAG = "SpeechToTextUtil"
     }
 
-    /**
-     * Bắt đầu nhận diện giọng nói
-     */
     fun startListening(launcher: ActivityResultLauncher<Intent>) {
-        // Bypass kiểm tra isRecognitionAvailable vì nó không chính xác trên một số thiết bị
-        // Thay vào đó, ta sẽ xử lý exception nếu có
-        
+
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "vi_VN") // Vietnamese
-            putExtra(RecognizerIntent.EXTRA_PROMPT, "Nói tên phim bạn muốn tìm...")
-            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
+
+            // Nhận diện tự do
+            putExtra(
+                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+            )
+
+            // Ưu tiên tiếng Việt
+            putExtra(
+                RecognizerIntent.EXTRA_LANGUAGE,
+                Locale("vi", "VN")
+            )
+
+            putExtra(
+                RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE,
+                "vi-VN"
+            )
+
+            putExtra(
+                RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE,
+                "vi-VN"
+            )
+
+            // Prompt hiển thị
+            putExtra(
+                RecognizerIntent.EXTRA_PROMPT,
+                "🎤 Nói tên phim bạn muốn tìm..."
+            )
+
+            // Lấy nhiều kết quả để tăng độ chính xác
+            putExtra(
+                RecognizerIntent.EXTRA_MAX_RESULTS,
+                5
+            )
+
+            // Cho phép kết quả tạm thời
+            putExtra(
+                RecognizerIntent.EXTRA_PARTIAL_RESULTS,
+                true
+            )
+
+            // Ưu tiên tiếng Việt
+            putExtra(
+                RecognizerIntent.EXTRA_CALLING_PACKAGE,
+                context.packageName
+            )
         }
 
         try {
             launcher.launch(intent)
-            Log.d(TAG, "✅ Bắt đầu nhận diện giọng nói")
+            Log.d(TAG, "Đã bắt đầu nhận diện giọng nói tiếng Việt")
         } catch (e: Exception) {
-            onError("Lỗi khởi động nhận diện: ${e.message}")
-            Log.e(TAG, "❌ Error starting speech recognition", e)
+            Log.e(TAG, "không thể khởi động Speech Recognition", e)
+            onError("Không thể khởi động nhận diện giọng nói: ${e.message}")
         }
     }
 
-    /**
-     * Xử lý kết quả từ Speech Recognition
-     */
-    fun handleSpeechResult(resultCode: Int, data: Intent?) {
+    fun handleSpeechResult(
+        resultCode: Int,
+        data: Intent?
+    ) {
+
         when (resultCode) {
+
             android.app.Activity.RESULT_OK -> {
-                if (data != null) {
-                    val results = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
-                    
-                    if (!results.isNullOrEmpty()) {
-                        val recognizedText = results[0]
-                        Log.d(TAG, "✅ Nhận diện được: $recognizedText")
-                        onResult(recognizedText)
-                    } else {
-                        onError("Không nhận diện được giọng nói")
-                    }
+
+                if (data == null) {
+                    onError("Không nhận được dữ liệu giọng nói")
+                    return
+                }
+
+                val results = data.getStringArrayListExtra(
+                    RecognizerIntent.EXTRA_RESULTS
+                )
+
+                if (!results.isNullOrEmpty()) {
+
+                    val recognizedText = results.first()
+
+                    Log.d(
+                        TAG,
+                        "Nhận diện thành công: $recognizedText"
+                    )
+
+                    onResult(recognizedText)
+
                 } else {
-                    onError("Không có dữ liệu nhận diện")
+                    onError("Không nhận diện được nội dung giọng nói")
                 }
             }
+
             android.app.Activity.RESULT_CANCELED -> {
-                onError("Nhận diện giọng nói bị hủy")
+                Log.d(TAG, "Người dùng đã hủy nhận diện")
+                onError("Đã hủy nhận diện giọng nói")
             }
+
             else -> {
-                onError("Nhận diện giọng nói lỗi")
-                Log.e(TAG, "❌ Speech recognition failed with result code: $resultCode")
+                Log.e(
+                    TAG,
+                    "Speech Recognition lỗi: $resultCode"
+                )
+                onError("Nhận diện giọng nói thất bại")
             }
         }
     }
 
-    /**
-     * Kiểm tra quyền microphone
-     */
     fun hasMicrophonePermission(): Boolean {
         return ContextCompat.checkSelfPermission(
             context,
@@ -83,7 +134,3 @@ class SpeechToTextUtil(
         ) == android.content.pm.PackageManager.PERMISSION_GRANTED
     }
 }
-
-
-
-

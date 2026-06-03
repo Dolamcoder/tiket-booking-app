@@ -39,10 +39,8 @@ class MainActivity : AppCompatActivity() {
         binding.viewPager2.currentItem=binding.viewPager2.currentItem+1
     }
     
-    // ✅ Speech to Text Utility
     private lateinit var speechToTextUtil: SpeechToTextUtil
     
-    // ✅ Activity Result Launcher for Speech Recognition
     private val speechRecognitionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -59,10 +57,8 @@ class MainActivity : AppCompatActivity() {
                         or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 )
         
-        // ✅ Khởi tạo Speech to Text
         initSpeechToText()
-        
-        // ✅ Setup ChipNavigationBar
+        binding.chipNavigation.setItemSelected(R.id.home, true)
         binding.chipNavigation.setOnItemSelectedListener(object : com.ismaeldivita.chipnavigation.ChipNavigationBar.OnItemSelectedListener {
             override fun onItemSelected(id: Int) {
                 when (id) {
@@ -72,11 +68,8 @@ class MainActivity : AppCompatActivity() {
                     R.id.search -> {
                         startActivity(Intent(this@MainActivity, SearchMovieActivity::class.java))
                     }
-                    R.id.explorer -> {
+                    R.id.home -> {
                         // TODO: Xử lý Explorer
-                    }
-                    R.id.favorite -> {
-                        // TODO: Xử lý Favorite
                     }
                 }
             }
@@ -123,7 +116,6 @@ class MainActivity : AppCompatActivity() {
     
      // ✅ Setup Search UI
     private fun setupSearchUI() {
-        // Lấy reference đến EditText search
         binding.searchEditText.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
                 // Optional: Xóa text placeholder khi focus
@@ -133,12 +125,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
         
-        // ✅ Click on search bar to open advanced search
-        binding.searchEditText.setOnClickListener {
-            startActivity(Intent(this@MainActivity, SearchMovieActivity::class.java))
-        }
-        
-        // 🔥 THÊM TextWatcher để auto-search khi nhập text
         binding.searchEditText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             

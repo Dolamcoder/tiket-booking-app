@@ -166,7 +166,6 @@ class MovieViewModel : ViewModel() {
         }
     }
 
-    // 🔍 Tìm kiếm phim theo tiêu đề (chỉ filter client-side, KHÔNG load DB)
     fun searchMoviesByTitle(query: String) {
         // Lấy tất cả phim đã load lúc trước
         val allMovies = mutableListOf<Movie>().apply {
@@ -278,11 +277,9 @@ class MovieViewModel : ViewModel() {
         _isLoading.value = true
         viewModelScope.launch {
             try {
-                // 1. Load tất cả phim từ Firestore
                 val moviesResult = movieRepository.getAllMovies()
                 val allMovies = moviesResult.getOrThrow()
 
-                // 2. Filter client-side bằng advancedSearchMovies
                 var filtered = movieRepository.advancedSearchMovies(
                     movies = allMovies,
                     title = title,
@@ -291,7 +288,6 @@ class MovieViewModel : ViewModel() {
                     castName = castName
                 )
 
-                // 3. Nếu có priceTier → cross-reference với Showtimes
                 if (!priceTier.isNullOrBlank()) {
                     val showtimesResult = showtimeRepository.getAllShowtimes()
                     val allShowtimes = showtimesResult.getOrThrow()
@@ -302,14 +298,11 @@ class MovieViewModel : ViewModel() {
                         .map { it.movieId }
                         .distinct()
 
-                    // Filter kết quả chỉ giữ phim có suất chiếu phù hợp
                     filtered = filtered.filter { it.id in matchingMovieIds }
                 }
 
-                // 4. Sắp xếp theo ticketsSold giảm dần (mặc định)
                 filtered = filtered.sortedByDescending { it.ticketsSold }
 
-                // 5. Post kết quả
                 _searchResults.value = filtered
                 _isLoading.value = false
 

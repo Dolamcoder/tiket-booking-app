@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="#0F1419"
     tools:context=".ui.view.client.SearchMovieActivity">
-
+    android:fitsSystemWindows="true"
     <!-- Header -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/headerLayout"
@@ -84,6 +84,7 @@
                     android:layout_height="48dp"
                     android:background="@drawable/light_black_bg"
                     android:drawableStart="@drawable/ic_search_nav"
+                    android:drawableEnd="@drawable/microphone"
                     android:drawablePadding="8dp"
                     android:drawableTint="@color/grey"
                     android:hint="Nhập tên phim..."
@@ -108,6 +109,7 @@
                     android:id="@+id/edtDescription"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
+                    android:drawableEnd="@drawable/microphone"
                     android:background="@drawable/light_black_bg"
                     android:hint="Nhập mô tả phim..."
                     android:inputType="text"
@@ -148,6 +150,7 @@
                     android:id="@+id/edtCastName"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
+                    android:drawableEnd="@drawable/microphone"
                     android:background="@drawable/light_black_bg"
                     android:hint="Nhập tên diễn viên..."
                     android:inputType="text"
@@ -294,4 +297,22 @@
         </LinearLayout>
     </ScrollView>
 
+    <com.ismaeldivita.chipnavigation.ChipNavigationBar
+        android:id="@+id/chipNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+    android:background="@drawable/light_black_bg"
+    android:padding="4dp"
+    app:cnb_iconColor="@color/white"
+    app:cnb_iconSize="20dp"
+    app:cnb_menuResource="@menu/bottom_menu"
+    app:cnb_orientationMode="horizontal"
+    app:cnb_radius="10dp"
+    app:cnb_unselectedColor="@color/white"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

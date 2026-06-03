@@ -1,14 +1,15 @@
 package com.example.dacs3_ticket_booking_app.ui.view.client
 
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.EditText
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
@@ -17,16 +18,29 @@ import com.example.dacs3_ticket_booking_app.R
 import com.example.dacs3_ticket_booking_app.data.model.Genre
 import com.example.dacs3_ticket_booking_app.data.model.Movie
 import com.example.dacs3_ticket_booking_app.databinding.ActivitySearchMovieBinding
+import com.example.dacs3_ticket_booking_app.ui.view.MainActivity
 import com.example.dacs3_ticket_booking_app.ui.view.adaper.MovieAdapter
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.GenreViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.MovieViewModel
+import com.example.dacs3_ticket_booking_app.utils.SpeechToTextUtil
 import com.google.android.material.chip.Chip
 
 class SearchMovieActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivitySearchMovieBinding
     private lateinit var movieViewModel: MovieViewModel
     private lateinit var genreViewModel: GenreViewModel
     private lateinit var movieAdapter: MovieAdapter
+
+    // Voice Search
+    private lateinit var speechToTextUtil: SpeechToTextUtil
+    private var currentSpeechTarget: EditText? = null
+
+    private val speechRecognitionLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        speechToTextUtil.handleSpeechResult(result.resultCode, result.data)
+    }
 
     // Filter variables
     private var selectedGenres = mutableSetOf<String>()
@@ -47,91 +61,113 @@ class SearchMovieActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySearchMovieBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         window.decorView.systemUiVisibility = (
                 View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                         or View.SYSTEM_UI_FLAG_FULLSCREEN
                         or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 )
+
+        // Setup Navigation
+        binding.chipNavigation.setItemSelected(R.id.search, true)
+        binding.chipNavigation.setOnItemSelectedListener { id ->
+            when (id) {
+                R.id.profile -> startActivity(Intent(this, ProfileActivity::class.java))
+                R.id.home -> startActivity(Intent(this, MainActivity::class.java))
+            }
+        }
+
         // Initialize ViewModels
         movieViewModel = ViewModelProvider(this).get(MovieViewModel::class.java)
         genreViewModel = ViewModelProvider(this).get(GenreViewModel::class.java)
+
+        // Init Voice
+        initSpeechToText()
 
         // Setup UI
         setupUI()
         setupRecyclerView()
         observeViewModels()
 
-        // Load initial data
+        // Load data
         movieViewModel.getAllMovies()
         genreViewModel.getAllGenres()
-        
-        // ✅ Auto-display all movies when entering the page
-        binding.recyclerViewResults.post {
-            Handler(Looper.getMainLooper()).postDelayed({
-                val allMovies = movieViewModel.movies.value ?: emptyList()
-                if (allMovies.isNotEmpty()) {
-                    updateMovieResults(allMovies)
+    }
+
+    // ==================== VOICE SEARCH ====================
+    private fun initSpeechToText() {
+        speechToTextUtil = SpeechToTextUtil(
+            context = this,
+            onResult = { recognizedText ->
+                currentSpeechTarget?.let { editText ->
+                    editText.setText(recognizedText)
+                    Toast.makeText(this, "Đã nhập: $recognizedText", Toast.LENGTH_SHORT).show()
                 }
-            }, 500) // Wait 500ms for movies to be loaded
+                currentSpeechTarget = null
+            },
+            onError = { errorMsg ->
+                Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show()
+                currentSpeechTarget = null
+            }
+        )
+
+        setupVoiceInput()
+    }
+
+    private fun setupVoiceInput() {
+        // Setup microphone for Title
+        setupMicrophoneClick(binding.edtTitle)
+
+        // Setup microphone for Description
+        setupMicrophoneClick(binding.edtDescription)
+
+        // Setup microphone for Cast Name
+        setupMicrophoneClick(binding.edtCastName)
+    }
+
+    private fun setupMicrophoneClick(editText: EditText) {
+        editText.setOnTouchListener { v, event ->
+            val DRAWABLE_END = 2
+            if (event.action == android.view.MotionEvent.ACTION_UP) {
+                val drawableEnd = editText.compoundDrawables[DRAWABLE_END]
+                if (drawableEnd != null &&
+                    event.x >= (editText.width - editText.paddingRight - drawableEnd.intrinsicWidth)
+                ) {
+                    currentSpeechTarget = editText
+
+                    if (speechToTextUtil.hasMicrophonePermission()) {
+                        speechToTextUtil.startListening(speechRecognitionLauncher)
+                    } else {
+                        requestMicrophonePermission()
+                    }
+                    return@setOnTouchListener true
+                }
+            }
+            false
         }
     }
 
+    private fun requestMicrophonePermission() {
+        androidx.core.app.ActivityCompat.requestPermissions(
+            this,
+            arrayOf(android.Manifest.permission.RECORD_AUDIO),
+            REQUEST_CODE_SPEECH
+        )
+    }
+
+    // ==================== OTHER SETUP ====================
     private fun setupUI() {
-        // Back button
-        binding.btnBack.setOnClickListener {
-            finish()
-        }
+        binding.btnBack.setOnClickListener { finish() }
 
-        // Search button
-        binding.btnSearch.setOnClickListener {
-            performAdvancedSearch()
-        }
+        binding.btnSearch.setOnClickListener { performAdvancedSearch() }
 
-        // Clear button
-        binding.btnClear.setOnClickListener {
-            clearFilters()
-        }
+        binding.btnClear.setOnClickListener { clearFilters() }
 
-        // Setup time slot spinner
         setupTimeSlotSpinner()
-
-        // Real-time search on title change
-        binding.edtTitle.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                triggerRealtimeSearch()
-            }
-
-            override fun afterTextChanged(s: Editable?) {}
-        })
-
-        // Real-time search on description change
-        binding.edtDescription.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                triggerRealtimeSearch()
-            }
-
-            override fun afterTextChanged(s: Editable?) {}
-        })
-
-        // Real-time search on cast name change
-        binding.edtCastName.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                triggerRealtimeSearch()
-            }
-
-            override fun afterTextChanged(s: Editable?) {}
-        })
     }
 
     private fun setupRecyclerView() {
         movieAdapter = MovieAdapter(mutableListOf(), null)
-
         binding.recyclerViewResults.apply {
             layoutManager = GridLayoutManager(this@SearchMovieActivity, 2)
             adapter = movieAdapter
@@ -139,53 +175,35 @@ class SearchMovieActivity : AppCompatActivity() {
     }
 
     private fun setupTimeSlotSpinner() {
-        val adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item,
-            timeSlotsData
-        )
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val adapter = ArrayAdapter(this, R.layout.spinner_item_white, timeSlotsData)
+        adapter.setDropDownViewResource(R.layout.spinner_dropdown_white)
         binding.spinnerTimeSlot.adapter = adapter
 
         binding.spinnerTimeSlot.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                // Trigger real-time search when time slot changes
-                triggerRealtimeSearch()
-            }
-
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {}
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
     }
 
     private fun observeViewModels() {
-        // Observe movies
         movieViewModel.searchResults.observe(this) { results ->
             updateMovieResults(results)
         }
 
-        // Observe all movies for fallback
         movieViewModel.movies.observe(this) { movies ->
-            if (movies.isNotEmpty()) {
+            if (movies.isNotEmpty() && binding.edtTitle.text.isNullOrEmpty()) {
                 updateMovieResults(movies)
             }
         }
 
-        // Observe genres for chip group
         genreViewModel.genres.observe(this) { genres ->
             setupGenreChips(genres)
         }
 
-        // Observe loading state
         movieViewModel.isLoading.observe(this) { isLoading ->
             binding.progressSearch.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
 
-        // Observe error messages
         movieViewModel.errorMessage.observe(this) { message ->
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         }
@@ -193,7 +211,6 @@ class SearchMovieActivity : AppCompatActivity() {
 
     private fun setupGenreChips(genres: List<Genre>) {
         binding.chipGroupGenres.removeAllViews()
-
         genres.forEach { genre ->
             val chip = Chip(this).apply {
                 text = genre.name
@@ -202,13 +219,8 @@ class SearchMovieActivity : AppCompatActivity() {
                 tag = genre.id
 
                 setOnCheckedChangeListener { _, isChecked ->
-                    if (isChecked) {
-                        selectedGenres.add(genre.id)
-                    } else {
-                        selectedGenres.remove(genre.id)
-                    }
-                    // Trigger real-time search when genre selection changes
-                    triggerRealtimeSearch()
+                    if (isChecked) selectedGenres.add(genre.name)
+                    else selectedGenres.remove(genre.name)
                 }
             }
             binding.chipGroupGenres.addView(chip)
@@ -220,17 +232,12 @@ class SearchMovieActivity : AppCompatActivity() {
         val description = binding.edtDescription.text.toString().ifEmpty { null }
         val castName = binding.edtCastName.text.toString().ifEmpty { null }
 
-        // Get selected time slot
         val selectedTimeSlot = binding.spinnerTimeSlot.selectedItem as String
         val priceTier = timeSlotsMap[selectedTimeSlot]
-
-        // Prepare genres list
         val genresList = selectedGenres.ifEmpty { null }?.toList()
 
-        // Show loading
         binding.progressSearch.visibility = View.VISIBLE
 
-        // Perform search
         movieViewModel.advancedSearch(
             title = title,
             description = description,
@@ -238,11 +245,6 @@ class SearchMovieActivity : AppCompatActivity() {
             castName = castName,
             priceTier = priceTier
         )
-    }
-
-    // 🔄 Real-time search khi thay đổi filters
-    private fun triggerRealtimeSearch() {
-        performAdvancedSearch()
     }
 
     private fun updateMovieResults(movies: List<Movie>) {
@@ -261,32 +263,21 @@ class SearchMovieActivity : AppCompatActivity() {
     }
 
     private fun clearFilters() {
-        // Clear all input fields
         binding.edtTitle.text?.clear()
         binding.edtDescription.text?.clear()
         binding.edtCastName.text?.clear()
 
-        // Clear genre selections
         selectedGenres.clear()
         binding.chipGroupGenres.clearCheck()
-
-        // Reset time slot spinner
         binding.spinnerTimeSlot.setSelection(0)
 
-        // Reload all movies
         movieViewModel.getAllMovies()
         updateMovieResults(movieViewModel.movies.value ?: emptyList())
 
         Toast.makeText(this, "Đã xóa bộ lọc", Toast.LENGTH_SHORT).show()
     }
 
-    private fun toggleFilterSection() {
-        if (binding.filterSection.isVisible) {
-            binding.filterSection.visibility = View.GONE
-        } else {
-            binding.filterSection.visibility = View.VISIBLE
-        }
+    companion object {
+        const val REQUEST_CODE_SPEECH = 100
     }
 }
-
-
