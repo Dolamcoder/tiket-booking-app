@@ -8,6 +8,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.dacs3_ticket_booking_app.data.model.Showtime
 import com.example.dacs3_ticket_booking_app.data.repository.ShowtimeRepository
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
 
 class ShowtimeViewModel : ViewModel() {
     private val showtimeRepository = ShowtimeRepository()
@@ -192,24 +196,49 @@ class ShowtimeViewModel : ViewModel() {
     // 📅 Load danh sách ngày chiếu theo movieId
     fun loadScreeningDates(movieId: String) {
         _isLoading.value = true
+
         viewModelScope.launch {
-            // Trước tiên load tất cả suất chiếu của phim
+
             val showtimesResult = showtimeRepository.getShowtimesByMovie(movieId)
+
             showtimesResult.onSuccess { showtimes ->
-                _showtimes.value = showtimes
-                
-                // Rồi extract danh sách ngày duy nhất
-                val uniqueDates = showtimes.map { it.screeningDate }.distinct().sorted()
+
+                val formatter = SimpleDateFormat(
+                    "dd/MM/yyyy",
+                    Locale.getDefault()
+                )
+
+                val today = formatter.parse(
+                    formatter.format(Date())
+                )
+
+                val validShowtimes = showtimes.filter {
+                    try {
+                        val screeningDate = formatter.parse(it.screeningDate)
+                        screeningDate != null && !screeningDate.before(today)
+                    } catch (e: Exception) {
+                        false
+                    }
+                }
+
+                _showtimes.value = validShowtimes
+
+                val uniqueDates = validShowtimes
+                    .map { it.screeningDate }
+                    .distinct()
+                    .sorted()
+
                 _screeningDates.value = uniqueDates
+
                 _isLoading.value = false
             }
+
             showtimesResult.onFailure { e ->
                 _errorMessage.value = "Lỗi tải ngày chiếu: ${e.message}"
                 _isLoading.value = false
             }
         }
     }
-
     // ⏰ Load danh sách khung giờ theo movieId và ngày
     fun loadTimeSlots(movieId: String, screeningDate: String) {
         _isLoading.value = true

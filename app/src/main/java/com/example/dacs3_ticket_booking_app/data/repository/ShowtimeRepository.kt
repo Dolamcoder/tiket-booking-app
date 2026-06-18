@@ -3,6 +3,9 @@ package com.example.dacs3_ticket_booking_app.data.repository
 import com.example.dacs3_ticket_booking_app.data.model.Showtime
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class ShowtimeRepository {
 
@@ -313,18 +316,62 @@ class ShowtimeRepository {
     }
 
     // ⏰ Lấy danh sách khung giờ theo movieId và ngày chiếu
-    suspend fun getTimeSlotsByMovieAndDate(movieId: String, screeningDate: String): Result<List<String>> {
+    suspend fun getTimeSlotsByMovieAndDate(
+        movieId: String,
+        screeningDate: String
+    ): Result<List<String>> {
+
         return try {
+
             val snapshot = showtimeCollection
                 .whereEqualTo("movieId", movieId)
                 .whereEqualTo("screeningDate", screeningDate)
                 .get()
                 .await()
+
             val showtimes = snapshot.toObjects(Showtime::class.java)
-            // Lấy khung giờ duy nhất (đã sắp xếp)
-            val timeSlots = showtimes.map { it.timeSlot }.distinct()
+
+            val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+            val today = dateFormat.format(Date())
+            val nowTime = timeFormat.parse(timeFormat.format(Date()))
+
+            val filteredShowtimes = when {
+                screeningDate > today -> {
+                    showtimes
+                }
+
+                screeningDate < today -> {
+                    emptyList()
+                }
+
+                else -> {
+                    showtimes.filter { showtime ->
+                        try {
+                            val startTimeStr =
+                                showtime.timeSlot.split("-")[0].trim()
+
+                            val startTime =
+                                timeFormat.parse(startTimeStr)
+
+                            startTime?.after(nowTime) == true
+                        } catch (e: Exception) {
+                            false
+                        }
+                    }
+                }
+            }
+
+            val timeSlots = filteredShowtimes
+                .map { it.timeSlot }
+                .distinct()
+                .sorted()
+
             Result.success(timeSlots)
+
         } catch (e: Exception) {
+
             Result.failure(e)
         }
     }
