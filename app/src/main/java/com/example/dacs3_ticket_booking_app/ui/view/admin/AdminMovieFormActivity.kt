@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.example.dacs3_ticket_booking_app.R
 import com.example.dacs3_ticket_booking_app.data.model.Cast
 import com.example.dacs3_ticket_booking_app.data.model.Genre
@@ -64,8 +65,10 @@ class AdminMovieFormActivity : AppCompatActivity() {
         editingMovie = intent.getSerializableExtra("movie") as? Movie
 
         setupButtons()
-        // Show "Thêm phim" title if new movie
-        if (editingMovie == null) {
+        // Điền dữ liệu nếu là sửa phim, nếu không thì hiện tiêu đề thêm phim
+        if (editingMovie != null) {
+            populateForm()
+        } else {
             binding.titleBar.text = "Thêm phim"
         }
         observeViewModels()
@@ -85,6 +88,15 @@ class AdminMovieFormActivity : AppCompatActivity() {
             binding.etYear.setText(movie.year.toString())
             binding.etReleaseDate.setText(movie.releaseDate)
             binding.etTrailerUrl.setText(movie.trailer)
+            
+            // Hiển thị ảnh poster hiện tại của phim nếu có
+            if (movie.poster.isNotEmpty()) {
+                Glide.with(this)
+                    .load(movie.poster)
+                    .placeholder(android.R.drawable.ic_menu_gallery)
+                    .error(android.R.drawable.ic_menu_gallery)
+                    .into(binding.posterPreview)
+            }
             
             // Display genres from movie directly
             displayGenresFromMovie()

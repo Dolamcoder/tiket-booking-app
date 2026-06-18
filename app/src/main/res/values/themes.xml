@@ -1,8 +1,11 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.Dacs3ticketbookingapp" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <!-- Đặt màu primary khớp với admin_accent để MaterialButton/FAB không bị ghi đè -->
+        <item name="colorPrimary">#6366F1</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorPrimaryContainer">#E8EAFF</item>
+        <item name="colorOnPrimaryContainer">#001055</item>
     </style>
 
     <style name="Theme.Dacs3ticketbookingapp" parent="Base.Theme.Dacs3ticketbookingapp" />

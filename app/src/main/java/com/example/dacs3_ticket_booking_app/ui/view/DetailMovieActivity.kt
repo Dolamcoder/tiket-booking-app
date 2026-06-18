@@ -1,8 +1,12 @@
 package com.example.dacs3_ticket_booking_app.ui.view
 
+import android.annotation.SuppressLint
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
@@ -84,6 +88,9 @@ class DetailMovieActivity : AppCompatActivity() {
                         LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
                 }
 
+                // Setup trailer player
+                setupTrailerPlayer(movie.trailer)
+
                 // Set buy ticket button
                 binding.btnBuyTicket.setOnClickListener {
                     val intent = Intent(this, SeatListActivity::class.java)
@@ -102,5 +109,78 @@ class DetailMovieActivity : AppCompatActivity() {
         viewModel.errorMessage.observe(this) { error ->
             // TODO: Show error toast or snackbar
         }
+    }
+
+    private fun setupTrailerPlayer(trailerUrl: String) {
+        if (trailerUrl.isEmpty()) {
+            binding.trailerThumbnail.visibility = View.GONE
+            binding.tvNoTrailer.visibility = View.VISIBLE
+            return
+        }
+
+        val videoId = extractYoutubeVideoId(trailerUrl)
+        if (videoId == null) {
+            binding.trailerThumbnail.visibility = View.GONE
+            binding.tvNoTrailer.visibility = View.VISIBLE
+            return
+        }
+
+        val thumbnailUrl = "https://img.youtube.com/vi/$videoId/maxresdefault.jpg"
+
+        // Load YouTube thumbnail
+        Glide.with(this)
+            .load(thumbnailUrl)
+            .placeholder(R.drawable.back_dark)
+            .error(R.drawable.back_dark)
+            .into(binding.ivTrailerThumbnail)
+
+        var youTubePlayer: YouTubePlayer? = null
+        var isPlayClicked = false
+
+        // Đăng ký lifecycle cho youtubePlayerView
+        lifecycle.addObserver(binding.youtubePlayerView)
+
+        binding.youtubePlayerView.addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
+            override fun onReady(player: YouTubePlayer) {
+                youTubePlayer = player
+                if (isPlayClicked) {
+                    player.loadVideo(videoId, 0f)
+                }
+            }
+        })
+
+        // Bấm thumbnail -> hiển thị YouTubePlayerView và bắt đầu phát video
+        binding.trailerThumbnail.setOnClickListener {
+            binding.trailerThumbnail.animate()
+                .alpha(0f)
+                .setDuration(300)
+                .withEndAction {
+                    binding.trailerThumbnail.visibility = View.GONE
+                    binding.trailerThumbnail.alpha = 1f
+                    binding.youtubePlayerView.visibility = View.VISIBLE
+
+                    isPlayClicked = true
+                    youTubePlayer?.loadVideo(videoId, 0f)
+                }.start()
+        }
+    }
+
+    private fun extractYoutubeVideoId(url: String): String? {
+        return when {
+            url.contains("youtu.be/") ->
+                url.substringAfter("youtu.be/").substringBefore("?").substringBefore("&").trim()
+            url.contains("youtube.com/watch") -> {
+                try { Uri.parse(url).getQueryParameter("v") } catch (e: Exception) { null }
+            }
+            url.contains("youtube.com/embed/") ->
+                url.substringAfter("embed/").substringBefore("?").trim()
+            url.contains("youtube.com/shorts/") ->
+                url.substringAfter("shorts/").substringBefore("?").trim()
+            else -> null
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
     }
 }

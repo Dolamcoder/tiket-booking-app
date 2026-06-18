@@ -203,6 +203,130 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/titleSection" />
 
+                        <!-- ========== TRAILER SECTION ========== -->
+                        <LinearLayout
+                            android:id="@+id/trailerSection"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:paddingTop="20dp"
+                            android:paddingBottom="0dp"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/divider1">
+
+                            <!-- Label bên trong có padding -->
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="24dp"
+                                android:layout_marginBottom="12dp"
+                                android:text="Trailer"
+                                android:textColor="@android:color/white"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.05" />
+
+                            <!-- Full-width video container, không padding -->
+                            <FrameLayout
+                                android:id="@+id/trailerContainer"
+                                android:layout_width="match_parent"
+                                android:layout_height="220dp"
+                                android:background="#000000">
+
+                                <!-- Native YouTube Player View -->
+                                <com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+                                    android:id="@+id/youtubePlayerView"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:visibility="gone" />
+
+                                <!-- Thumbnail overlay -->
+                                <FrameLayout
+                                    android:id="@+id/trailerThumbnail"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:background="#111111"
+                                    android:clickable="true"
+                                    android:focusable="true">
+
+                                    <!-- Ảnh thumbnail YouTube -->
+                                    <ImageView
+                                        android:id="@+id/ivTrailerThumbnail"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:scaleType="centerCrop"
+                                        android:contentDescription="Trailer thumbnail" />
+
+                                    <!-- Gradient overlay bên dưới -->
+                                    <View
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:background="#55000000" />
+
+                                    <!-- Nút Play trung tâm -->
+                                    <FrameLayout
+                                        android:layout_width="80dp"
+                                        android:layout_height="80dp"
+                                        android:layout_gravity="center"
+                                        android:background="@drawable/trailer_play_bg"
+                                        android:elevation="4dp">
+
+                                        <ImageView
+                                            android:layout_width="34dp"
+                                            android:layout_height="34dp"
+                                            android:layout_gravity="center"
+                                            android:layout_marginStart="6dp"
+                                            android:contentDescription="Play"
+                                            android:src="@android:drawable/ic_media_play"
+                                            android:tint="@android:color/white" />
+                                    </FrameLayout>
+
+                                    <!-- Badge "TRAILER" góc trên trái -->
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_gravity="top|start"
+                                        android:layout_margin="12dp"
+                                        android:text="TRAILER"
+                                        android:textColor="@android:color/white"
+                                        android:textSize="10sp"
+                                        android:textStyle="bold"
+                                        android:letterSpacing="0.12"
+                                        android:paddingStart="8dp"
+                                        android:paddingEnd="8dp"
+                                        android:paddingTop="4dp"
+                                        android:paddingBottom="4dp"
+                                        android:background="#CCFF0000" />
+
+                                </FrameLayout>
+
+                                <!-- Thông báo chưa có trailer -->
+                                <TextView
+                                    android:id="@+id/tvNoTrailer"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:text="Chưa có trailer"
+                                    android:textColor="#888888"
+                                    android:textSize="14sp"
+                                    android:visibility="gone" />
+                            </FrameLayout>
+
+                        </LinearLayout>
+
+                        <!-- DIVIDER after Trailer -->
+                        <View
+                            android:id="@+id/dividerTrailer"
+                            android:layout_width="0dp"
+                            android:layout_height="0.5dp"
+                            android:layout_marginStart="24dp"
+                            android:layout_marginEnd="24dp"
+                            android:background="#33FFFFFF"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/trailerSection" />
+
                         <!-- ========== SUMMARY SECTION ========== -->
                         <LinearLayout
                             android:id="@+id/summarySection"
@@ -212,7 +336,7 @@
                             android:padding="24dp"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/divider1">
+                            app:layout_constraintTop_toBottomOf="@+id/dividerTrailer">
 
                             <TextView
                                 android:id="@+id/tvSummaryLabel"

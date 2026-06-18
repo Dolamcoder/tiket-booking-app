@@ -120,11 +120,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="24dp"
-        android:src="@drawable/ic_add_showtime"
+        android:layout_margin="20dp"
+        android:src="@android:drawable/ic_input_add"
         app:backgroundTint="@color/admin_accent"
         app:tint="@color/admin_text_primary"
-        app:fabSize="normal"
-        android:elevation="6dp" />
+        app:fabSize="normal" />
+
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
