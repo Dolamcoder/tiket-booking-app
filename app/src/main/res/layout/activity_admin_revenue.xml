@@ -265,6 +265,33 @@
             </LinearLayout>
         </LinearLayout>
 
+        <!-- Visual Distribution Chart Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/admin_surface_card"
+            android:padding="16dp"
+            android:layout_marginBottom="16dp"
+            android:gravity="center_horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Biểu đồ phân phối"
+                android:textColor="@color/admin_text_primary"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:layout_gravity="start"
+                android:layout_marginBottom="12dp" />
+
+            <com.example.dacs3_ticket_booking_app.ui.view.custom.DoughnutChartView
+                android:id="@+id/doughnutChartView"
+                android:layout_width="220dp"
+                android:layout_height="220dp"
+                android:layout_marginVertical="16dp" />
+        </LinearLayout>
+
         <!-- Revenue by Movie/Room -->
         <LinearLayout
             android:layout_width="match_parent"

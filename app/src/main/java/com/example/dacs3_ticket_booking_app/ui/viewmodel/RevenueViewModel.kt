@@ -23,8 +23,8 @@ class RevenueViewModel : ViewModel() {
     private val _revenueByMovie = MutableLiveData<Map<String, Double>>()
     val revenueByMovie: LiveData<Map<String, Double>> = _revenueByMovie
 
-    private val _revenueByRoom = MutableLiveData<Map<String, Double>>()
-    val revenueByRoom: LiveData<Map<String, Double>> = _revenueByRoom
+    private val _revenueByRoom = MutableLiveData<Map<String, Pair<Double, Int>>>()
+    val revenueByRoom: LiveData<Map<String, Pair<Double, Int>>> = _revenueByRoom
 
     private val _revenueByDate = MutableLiveData<Map<Long, Double>>()
     val revenueByDate: LiveData<Map<Long, Double>> = _revenueByDate
@@ -100,7 +100,8 @@ class RevenueViewModel : ViewModel() {
             val result = revenueRepository.getRevenueByRoomFromBills()
             result.onSuccess { roomMap ->
                 _revenueByRoom.value = roomMap
-                _totalRevenue.value = roomMap.values.sum()
+                _totalRevenue.value = roomMap.values.sumOf { it.first }
+                _totalTickets.value = roomMap.values.sumOf { it.second }
                 _isLoading.value = false
             }
             result.onFailure { exception ->
@@ -117,7 +118,8 @@ class RevenueViewModel : ViewModel() {
             val result = revenueRepository.getRevenueByRoomFromBillsByDateRange(startDate, endDate)
             result.onSuccess { roomMap ->
                 _revenueByRoom.value = roomMap
-                _totalRevenue.value = roomMap.values.sum()
+                _totalRevenue.value = roomMap.values.sumOf { it.first }
+                _totalTickets.value = roomMap.values.sumOf { it.second }
                 _isLoading.value = false
             }
             result.onFailure { exception ->

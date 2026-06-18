@@ -44,12 +44,20 @@ class RevenueRepository {
             
             val revenueMap = mutableMapOf<String, Revenue>()
             
+            // Caches to prevent redundant sequential Firestore requests
+            val showtimeCache = mutableMapOf<String, com.google.firebase.firestore.DocumentSnapshot>()
+            val movieCache = mutableMapOf<String, com.google.firebase.firestore.DocumentSnapshot>()
+            
             for (bill in bills) {
                 try {
-                    val showtimeDoc = showtimesCollection.document(bill.showtimeId).get().await()
+                    val showtimeDoc = showtimeCache.getOrPut(bill.showtimeId) {
+                        showtimesCollection.document(bill.showtimeId).get().await()
+                    }
                     val movieId = showtimeDoc.getString("movieId") ?: continue
                     
-                    val movieDoc = moviesCollection.document(movieId).get().await()
+                    val movieDoc = movieCache.getOrPut(movieId) {
+                        moviesCollection.document(movieId).get().await()
+                    }
                     val movieTitle = movieDoc.getString("title") ?: "Unknown"
                     
                     val key = "$movieId|$movieTitle"
@@ -136,12 +144,20 @@ class RevenueRepository {
             
             val revenueMap = mutableMapOf<String, Revenue>()
             
+            // Caches to prevent redundant sequential Firestore requests
+            val showtimeCache = mutableMapOf<String, com.google.firebase.firestore.DocumentSnapshot>()
+            val movieCache = mutableMapOf<String, com.google.firebase.firestore.DocumentSnapshot>()
+            
             for (bill in filteredBills) {
                 try {
-                    val showtimeDoc = showtimesCollection.document(bill.showtimeId).get().await()
+                    val showtimeDoc = showtimeCache.getOrPut(bill.showtimeId) {
+                        showtimesCollection.document(bill.showtimeId).get().await()
+                    }
                     val movieId = showtimeDoc.getString("movieId") ?: continue
                     
-                    val movieDoc = moviesCollection.document(movieId).get().await()
+                    val movieDoc = movieCache.getOrPut(movieId) {
+                        moviesCollection.document(movieId).get().await()
+                    }
                     val movieTitle = movieDoc.getString("title") ?: "Unknown"
                     
                     val key = "$movieId|$movieTitle"
@@ -242,7 +258,7 @@ class RevenueRepository {
     }
     
     // ✅ Lấy doanh thu theo phòng từ bills
-    suspend fun getRevenueByRoomFromBills(): Result<Map<String, Double>> {
+    suspend fun getRevenueByRoomFromBills(): Result<Map<String, Pair<Double, Int>>> {
         return try {
             val billsCollection = db.collection("bills")
             val billsSnapshot = billsCollection
@@ -255,18 +271,29 @@ class RevenueRepository {
             val showtimesCollection = db.collection("showtimes")
             val roomsCollection = db.collection("rooms")
             
-            val revenueByRoom = mutableMapOf<String, Double>()
+            val revenueByRoom = mutableMapOf<String, Pair<Double, Int>>()
+            
+            // Caches to prevent redundant sequential Firestore requests
+            val showtimeCache = mutableMapOf<String, com.google.firebase.firestore.DocumentSnapshot>()
+            val roomCache = mutableMapOf<String, com.google.firebase.firestore.DocumentSnapshot>()
             
             for (bill in bills) {
                 try {
-                    val showtimeDoc = showtimesCollection.document(bill.showtimeId).get().await()
+                    val showtimeDoc = showtimeCache.getOrPut(bill.showtimeId) {
+                        showtimesCollection.document(bill.showtimeId).get().await()
+                    }
                     val roomId = showtimeDoc.getString("roomId") ?: continue
                     
-                    val roomDoc = roomsCollection.document(roomId).get().await()
+                    val roomDoc = roomCache.getOrPut(roomId) {
+                        roomsCollection.document(roomId).get().await()
+                    }
                     val roomName = roomDoc.getString("name") ?: "Unknown"
                     
-                    val amount = bill.price * bill.seatPositions.size
-                    revenueByRoom[roomName] = (revenueByRoom[roomName] ?: 0.0) + amount
+                    val ticketCount = bill.seatPositions.size
+                    val amount = bill.price * ticketCount
+                    
+                    val existing = revenueByRoom[roomName] ?: (0.0 to 0)
+                    revenueByRoom[roomName] = (existing.first + amount) to (existing.second + ticketCount)
                 } catch (e: Exception) {
                     // Skip
                 }
@@ -279,7 +306,7 @@ class RevenueRepository {
     }
     
     // ✅ Lấy doanh thu theo phòng trong khoảng ngày
-    suspend fun getRevenueByRoomFromBillsByDateRange(startDate: Long, endDate: Long): Result<Map<String, Double>> {
+    suspend fun getRevenueByRoomFromBillsByDateRange(startDate: Long, endDate: Long): Result<Map<String, Pair<Double, Int>>> {
         return try {
             val billsCollection = db.collection("bills")
             val billsSnapshot = billsCollection.get().await()
@@ -293,18 +320,29 @@ class RevenueRepository {
             val showtimesCollection = db.collection("showtimes")
             val roomsCollection = db.collection("rooms")
             
-            val revenueByRoom = mutableMapOf<String, Double>()
+            val revenueByRoom = mutableMapOf<String, Pair<Double, Int>>()
+            
+            // Caches to prevent redundant sequential Firestore requests
+            val showtimeCache = mutableMapOf<String, com.google.firebase.firestore.DocumentSnapshot>()
+            val roomCache = mutableMapOf<String, com.google.firebase.firestore.DocumentSnapshot>()
             
             for (bill in filteredBills) {
                 try {
-                    val showtimeDoc = showtimesCollection.document(bill.showtimeId).get().await()
+                    val showtimeDoc = showtimeCache.getOrPut(bill.showtimeId) {
+                        showtimesCollection.document(bill.showtimeId).get().await()
+                    }
                     val roomId = showtimeDoc.getString("roomId") ?: continue
                     
-                    val roomDoc = roomsCollection.document(roomId).get().await()
+                    val roomDoc = roomCache.getOrPut(roomId) {
+                        roomsCollection.document(roomId).get().await()
+                    }
                     val roomName = roomDoc.getString("name") ?: "Unknown"
                     
-                    val amount = bill.price * bill.seatPositions.size
-                    revenueByRoom[roomName] = (revenueByRoom[roomName] ?: 0.0) + amount
+                    val ticketCount = bill.seatPositions.size
+                    val amount = bill.price * ticketCount
+                    
+                    val existing = revenueByRoom[roomName] ?: (0.0 to 0)
+                    revenueByRoom[roomName] = (existing.first + amount) to (existing.second + ticketCount)
                 } catch (e: Exception) {
                     // Skip
                 }
