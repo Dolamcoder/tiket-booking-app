@@ -9,7 +9,7 @@
 
     <!-- Cho phép HTTP tới server laptop -->
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">172.26.34.182</domain>
+        <domain includeSubdomains="true">172.26.39.1</domain>
     </domain-config>
 
 </network-security-config>

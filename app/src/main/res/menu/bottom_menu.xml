@@ -16,6 +16,13 @@
         app:cnb_iconColor="@color/white"
         />
     <item
+        android:id="@+id/chat_ai"
+        android:icon="@drawable/chat_icon"
+        android:title="AI Chat"
+        app:cnb_backgroundColor="@color/green"
+        app:cnb_iconColor="@color/white"
+        />
+    <item
         android:id="@+id/profile"
         android:icon="@drawable/btn_4"
         android:title="Profile"
