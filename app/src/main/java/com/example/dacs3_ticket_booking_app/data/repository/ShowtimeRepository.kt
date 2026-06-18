@@ -113,7 +113,7 @@ class ShowtimeRepository {
     // 🔒 Lock ghế (Transaction an toàn, chống đặt trùng)
     // LOCK_TIMEOUT_MS = 2 phút (auto unlock nếu quá 2p)
     suspend fun lockSeats(showtimeId: String, positions: List<String>): Result<Unit> {
-        val LOCK_TIMEOUT_MS = 2 * 60 * 1000L  // ✅ 2 phút
+        val LOCK_TIMEOUT_MS = 1 * 60 * 1000L  // ✅ 1 phút
         val docRef = showtimeCollection.document(showtimeId)
         return try {
             db.runTransaction { transaction ->

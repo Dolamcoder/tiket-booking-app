@@ -444,10 +444,13 @@ class SeatListActivity : AppCompatActivity() {
                         "Đã đặt vé thành công",
                         android.widget.Toast.LENGTH_LONG
                     ).show()
-                    // ✅ Delay một chút rồi quay lại
-                    binding.root.postDelayed({
-                        finish()
-                    }, 1500)
+                    
+                    // ✅ Điều hướng thẳng đến trang chi tiết hóa đơn (UserBillDetailActivity)
+                    val detailIntent = android.content.Intent(this, UserBillDetailActivity::class.java).apply {
+                        putExtra("BILL_ID", pendingBillId)
+                    }
+                    startActivity(detailIntent)
+                    finish()
                 }
                 RESULT_CANCELED -> {
                     // ❌ Payment thất bại - Bill & ghế đã được xóa/unlock ở PaymentActivity
