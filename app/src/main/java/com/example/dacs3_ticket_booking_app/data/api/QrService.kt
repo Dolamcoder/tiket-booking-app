@@ -6,7 +6,8 @@ import retrofit2.Response
 
 data class GenerateQRRequest(
     val billId: String,
-    val endTime: Long  // milliseconds
+    val endTime: Long, // milliseconds
+    val count: Long
 )
 
 data class GenerateQRResponse(
@@ -25,13 +26,15 @@ data class QRData(
 data class VerifyQRRequest(
     val billId: String = "",
     val endTime: Long = 0L,
-    val signature: String = ""
+    val signature: String = "",
+    val count: Long = 0L
 )
 
 data class VerifyQRResponse(
     val valid: Boolean = false,
     val message: String = "",
-    val error: String? = null
+    val error: String? = null,
+    val count: Long = 0L
 )
 
 interface QRService {  

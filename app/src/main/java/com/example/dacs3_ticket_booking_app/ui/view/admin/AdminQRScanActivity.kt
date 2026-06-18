@@ -92,9 +92,9 @@ class AdminQRScanActivity : AppCompatActivity(), BarcodeCallback {
                 val billId = jsonObject.getString("billId")
                 val endTime = jsonObject.getLong("endTime")
                 val signature = jsonObject.getString("signature")
-                
+                val count = jsonObject.optLong("count", 1) // Default to 1 if not present
                 // Verify QR code with backend
-                verifyQRCode(billId, endTime, signature)
+                verifyQRCode(billId, endTime, signature,count )
             } catch (e: Exception) {
                 // If JSON parsing fails, show error
                 showErrorDialog("Mã QR không hợp lệ", "Không thể đọc dữ liệu từ mã QR: ${e.message}") {
@@ -150,10 +150,10 @@ class AdminQRScanActivity : AppCompatActivity(), BarcodeCallback {
         }
     }
 
-    private fun verifyQRCode(billId: String, endTime: Long, signature: String) {
+    private fun verifyQRCode(billId: String, endTime: Long, signature: String, count:Long) {
         MainScope().launch {
             try {
-                val request = VerifyQRRequest(billId, endTime, signature)
+                val request = VerifyQRRequest(billId, endTime, signature, count)
                 val response = withContext(Dispatchers.IO) {
                     RetrofitClient.qrService.verifyQR(request)
                 }
@@ -161,8 +161,8 @@ class AdminQRScanActivity : AppCompatActivity(), BarcodeCallback {
                 if (response.isSuccessful) {
                     val body = response.body()!!
                     if (body.valid) {
-                        // QR is valid
-                        showSuccessDialog(body.message) {
+                        val message = """ ${body.message} Số vé đã đặt: ${body.count}""".trimIndent()
+                        showSuccessDialog(message) {
                             binding.barcodeScanner.resume()
                         }
                     } else {
@@ -172,9 +172,32 @@ class AdminQRScanActivity : AppCompatActivity(), BarcodeCallback {
                         }
                     }
                 } else {
-                    // Request failed
-                    val errorMsg = response.body()?.error ?: "Lỗi xác minh mã QR"
-                    showErrorDialog("Lỗi", errorMsg) {
+
+                    val errorBody = response.errorBody()?.string()
+
+                    var errorMessage = "Lỗi xác minh mã QR"
+
+                    try {
+                        if (!errorBody.isNullOrEmpty()) {
+                            val json = JSONObject(errorBody)
+
+                            errorMessage =
+                                json.optString(
+                                    "message",
+                                    json.optString(
+                                        "error",
+                                        "Lỗi xác minh mã QR"
+                                    )
+                                )
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+
+                    showErrorDialog(
+                        "QR Không Hợp Lệ",
+                        errorMessage
+                    ) {
                         binding.barcodeScanner.resume()
                     }
                 }

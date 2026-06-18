@@ -199,7 +199,11 @@ class SeatListActivity : AppCompatActivity() {
                         if (selectedShowtime != null) {
                             val endTime = QRUtils.calculateEndTime(selectedScreeningDate, selectedTimeSlot)
                             android.util.Log.d("SeatListActivity", "📱 Calling API to generate QR: billId=$billId, endTime=$endTime")
-                            qrViewModel.generateQR(billId, endTime)
+                            qrViewModel.generateQR(
+                                billId,
+                                endTime,
+                                selectedSeatCount.toLong()
+                            )
                         }
                     }
                 }

@@ -10,8 +10,8 @@ import android.util.Log
 class QRRepository {
     private val qrService = RetrofitClient.qrService
 
-    suspend fun generateQR(billId: String, endTime: Long): Result<GenerateQRResponse> = try {
-        val request = GenerateQRRequest(billId, endTime)
+    suspend fun generateQR(billId: String, endTime: Long, count:Long): Result<GenerateQRResponse> = try {
+        val request = GenerateQRRequest(billId, endTime, count)
         val response = qrService.generateQR(request)
 
         if (response.isSuccessful && response.body() != null) {

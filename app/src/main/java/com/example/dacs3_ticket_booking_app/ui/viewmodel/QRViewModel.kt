@@ -28,12 +28,12 @@ class QRViewModel : ViewModel() {
     private val _verifyResult = MutableLiveData<VerifyQRResponse?>()
     val verifyResult: LiveData<VerifyQRResponse?> = _verifyResult
 
-    fun generateQR(billId: String, endTime: Long) {
+    fun generateQR(billId: String, endTime: Long, count:Long) {
         _isLoading.value = true
         Log.d("QRViewModel", "📊 Generating QR: billId=$billId, endTime=$endTime")
 
         viewModelScope.launch {
-            val result = qrRepository.generateQR(billId, endTime)
+            val result = qrRepository.generateQR(billId, endTime, count)
             result.onSuccess { response ->
                 Log.d("QRViewModel", "✅ QR generated: ${response.qrImage?.take(50)}...")
                 _qrCodeData.value = response

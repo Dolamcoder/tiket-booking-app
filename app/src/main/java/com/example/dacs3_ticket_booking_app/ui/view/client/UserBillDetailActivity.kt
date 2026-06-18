@@ -9,18 +9,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.example.dacs3_ticket_booking_app.databinding.ActivityUserBillDetailBinding
-import com.example.dacs3_ticket_booking_app.data.api.GenerateQRRequest
-import com.example.dacs3_ticket_booking_app.data.api.RetrofitClient
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.BillViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.MovieViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.RoomViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.ShowtimeViewModel
 import com.example.dacs3_ticket_booking_app.utils.PriceManager
 import com.example.dacs3_ticket_booking_app.utils.SeatUtils
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import android.graphics.BitmapFactory
 import android.util.Base64
 import java.text.SimpleDateFormat
@@ -72,12 +66,11 @@ class UserBillDetailActivity : AppCompatActivity() {
         
         // Set up QR code container click listener
         binding.qrCodeContainer.setOnClickListener {
-            val bill = billViewModel.billDetail.value
-            if (bill != null) {
-                generateAndDisplayQRCode(bill.id)
-            } else {
-                Toast.makeText(this, "Bill data not loaded yet", Toast.LENGTH_SHORT).show()
-            }
+            Toast.makeText(
+                this,
+                "QR đã được tải từ hóa đơn",
+                Toast.LENGTH_SHORT
+            ).show()
         }
         
         // Set up cancel bill button click listener
@@ -128,8 +121,47 @@ class UserBillDetailActivity : AppCompatActivity() {
                     
                     // QR Code (if available)
                     if (bill.qrCodeData.isNotEmpty()) {
-                        // TODO: Display QR code from qrCodeData
-                        tvQrPlaceholder.visibility = View.GONE
+
+                        try {
+
+                            val base64Data = bill.qrCodeData.substringAfter(",")
+
+                            val decodedBytes = Base64.decode(
+                                base64Data,
+                                Base64.DEFAULT
+                            )
+
+                            val bitmap = BitmapFactory.decodeByteArray(
+                                decodedBytes,
+                                0,
+                                decodedBytes.size
+                            )
+
+                            binding.apply {
+                                ivQrCode.setImageBitmap(bitmap)
+                                ivQrCode.visibility = View.VISIBLE
+                                tvQrPlaceholder.visibility = View.GONE
+                                qrProgressBar.visibility = View.GONE
+                            }
+
+                        } catch (e: Exception) {
+
+                            e.printStackTrace()
+
+                            binding.apply {
+                                ivQrCode.visibility = View.GONE
+                                tvQrPlaceholder.visibility = View.VISIBLE
+                                qrProgressBar.visibility = View.GONE
+                            }
+                        }
+
+                    } else {
+
+                        binding.apply {
+                            ivQrCode.visibility = View.GONE
+                            tvQrPlaceholder.visibility = View.VISIBLE
+                            qrProgressBar.visibility = View.GONE
+                        }
                     }
                 }
             }
@@ -181,80 +213,6 @@ class UserBillDetailActivity : AppCompatActivity() {
         }
     }
 
-    private fun generateAndDisplayQRCode(billId: String) {
-        MainScope().launch {
-            try {
-                // Show loading
-                binding.qrProgressBar.visibility = View.VISIBLE
-                binding.tvQrPlaceholder.visibility = View.GONE
-
-                val bill = billViewModel.billDetail.value ?: return@launch
-                
-                // Calculate endTime (24 hours from booking time)
-                val endTime = bill.bookingTime + (24 * 60 * 60 * 1000)
-
-                // Call backend API to generate QR code
-                val request = GenerateQRRequest(billId, endTime)
-                val response = withContext(Dispatchers.IO) {
-                    RetrofitClient.qrService.generateQR(request)
-                }
-
-                if (response.isSuccessful && response.body()?.success == true) {
-                    val qrImage = response.body()?.qrImage
-                    if (!qrImage.isNullOrEmpty()) {
-                        // Decode base64 and display
-                        try {
-                            val decodedBytes = Base64.decode(qrImage.substringAfter(","), Base64.DEFAULT)
-                            val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
-                            
-                            binding.apply {
-                                ivQrCode.setImageBitmap(bitmap)
-                                ivQrCode.visibility = View.VISIBLE
-                                tvQrPlaceholder.visibility = View.GONE
-                                qrProgressBar.visibility = View.GONE
-                            }
-                            
-                            // Save QR data to bill
-                            billViewModel.updateBillQRData(billId, qrImage)
-                        } catch (e: Exception) {
-                            Toast.makeText(this@UserBillDetailActivity, 
-                                "Error displaying QR code: ${e.message}", 
-                                Toast.LENGTH_SHORT).show()
-                            binding.apply {
-                                qrProgressBar.visibility = View.GONE
-                                tvQrPlaceholder.visibility = View.VISIBLE
-                            }
-                        }
-                    } else {
-                        Toast.makeText(this@UserBillDetailActivity, 
-                            "QR code data is empty", 
-                            Toast.LENGTH_SHORT).show()
-                        binding.apply {
-                            qrProgressBar.visibility = View.GONE
-                            tvQrPlaceholder.visibility = View.VISIBLE
-                        }
-                    }
-                } else {
-                    val errorMsg = response.body()?.error ?: "Failed to generate QR code"
-                    Toast.makeText(this@UserBillDetailActivity, 
-                        errorMsg, 
-                        Toast.LENGTH_SHORT).show()
-                    binding.apply {
-                        qrProgressBar.visibility = View.GONE
-                        tvQrPlaceholder.visibility = View.VISIBLE
-                    }
-                }
-            } catch (e: Exception) {
-                binding.apply {
-                    qrProgressBar.visibility = View.GONE
-                    tvQrPlaceholder.visibility = View.VISIBLE
-                }
-                Toast.makeText(this@UserBillDetailActivity, 
-                    "Error: ${e.message}", 
-                    Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
 
     private fun showCancelConfirmationDialog(billId: String) {
         AlertDialog.Builder(this)
