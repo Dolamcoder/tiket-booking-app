@@ -31,6 +31,11 @@ class AdminRoomDetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAdminRoomDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                )
 
         val room = intent.getSerializableExtra("room") as? Room
         if (room == null) {

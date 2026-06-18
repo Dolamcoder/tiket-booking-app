@@ -18,6 +18,12 @@ class AdminMovieListActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAdminMovieListBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                )
+
         movieViewModel = ViewModelProvider(this).get(MovieViewModel::class.java)
         setupRecyclerView()
         setupSearchListener()

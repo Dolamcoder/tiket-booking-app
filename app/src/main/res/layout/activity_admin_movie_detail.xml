@@ -51,24 +51,6 @@
                     android:src="@drawable/back_dark"
                     android:clickable="true"
                     android:focusable="true" />
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Chi tiết Phim"
-                    android:textColor="@color/admin_text_primary"
-                    android:textStyle="bold"
-                    android:textSize="20sp"
-                    android:layout_marginStart="8dp" />
-
-                <ImageButton
-                    android:id="@+id/btnEdit"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@android:drawable/ic_menu_edit"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:tint="@color/admin_text_primary" />
             </LinearLayout>
         </FrameLayout>
 

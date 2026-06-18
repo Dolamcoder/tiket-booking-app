@@ -38,6 +38,11 @@ class AdminShowtimeListActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAdminShowtimeListBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                )
 
         showtimeViewModel = ViewModelProvider(this).get(ShowtimeViewModel::class.java)
         movieViewModel = ViewModelProvider(this).get(MovieViewModel::class.java)

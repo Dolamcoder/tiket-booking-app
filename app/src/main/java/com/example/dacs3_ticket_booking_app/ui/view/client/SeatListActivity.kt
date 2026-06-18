@@ -216,7 +216,7 @@ class SeatListActivity : AppCompatActivity() {
                     billViewModel.updateBillQRData(pendingBillId, qrResponse.qrImage?:"")
                     val paymentIntent = Intent(this@SeatListActivity, PaymentActivity::class.java).apply {
                         putExtra(PaymentActivity.BILL_ID, pendingBillId)
-                        putExtra(PaymentActivity.AMOUNT, (price * selectedSeatCount).toLong())
+                        putExtra(PaymentActivity.AMOUNT, price.toLong())
                         putExtra(PaymentActivity.SHOWTIME_ID, showtimeViewModel.selectedShowtime.value?.id ?: "")
                         putStringArrayListExtra(PaymentActivity.SELECTED_SEATS, ArrayList(selectedSeatPositions))
                         putExtra("qrImageData", qrResponse.qrImage ?: "")
@@ -227,7 +227,6 @@ class SeatListActivity : AppCompatActivity() {
             }
             qrObserverAdded = true
         }
-
         qrViewModel.errorMessage.observe(this) { msg ->
             android.util.Log.e("SeatListActivity", "❌ QR Error: $msg")
             android.widget.Toast.makeText(this, "Lỗi tạo QR: $msg", android.widget.Toast.LENGTH_SHORT).show()

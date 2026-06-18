@@ -32,6 +32,11 @@ class AdminRevenueActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAdminRevenueBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                )
 
         revenueViewModel = ViewModelProvider(this).get(RevenueViewModel::class.java)
 

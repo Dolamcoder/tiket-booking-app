@@ -19,6 +19,11 @@ class AdminMovieDetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAdminMovieDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                )
 
         val movie = intent.getSerializableExtra("movie") as? Movie
 
@@ -31,11 +36,6 @@ class AdminMovieDetailActivity : AppCompatActivity() {
 
         binding.backBtn.setOnClickListener { finish() }
 
-        binding.btnEdit.setOnClickListener {
-            val intent = Intent(this, AdminMovieFormActivity::class.java)
-            intent.putExtra("movie", movie)
-            startActivity(intent)
-        }
     }
 
     private fun displayMovieDetail(movie: Movie) {
