@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.dacs3_ticket_booking_app.R
 import com.example.dacs3_ticket_booking_app.databinding.ActivityAdminRevenueBinding
 import com.example.dacs3_ticket_booking_app.ui.view.adapter.RevenueAdapter
+import com.example.dacs3_ticket_booking_app.ui.view.adapter.RevenueAdapterItem
+import com.example.dacs3_ticket_booking_app.ui.view.custom.DoughnutChartView
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.RevenueViewModel
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
@@ -27,6 +29,17 @@ class AdminRevenueActivity : AppCompatActivity() {
     private var startDate: Long = 0
     private var endDate: Long = 0
     private var currentViewType = 0  // 0 = by movie, 1 = by room
+
+    private val paletteColors = listOf(
+        android.graphics.Color.parseColor("#6366F1"),
+        android.graphics.Color.parseColor("#EC4899"),
+        android.graphics.Color.parseColor("#10B981"),
+        android.graphics.Color.parseColor("#F59E0B"),
+        android.graphics.Color.parseColor("#3B82F6"),
+        android.graphics.Color.parseColor("#8B5CF6"),
+        android.graphics.Color.parseColor("#EF4444"),
+        android.graphics.Color.parseColor("#06B6D4")
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,9 +73,9 @@ class AdminRevenueActivity : AppCompatActivity() {
         val adapter = ArrayAdapter.createFromResource(
             this,
             R.array.revenue_view_types,
-            android.R.layout.simple_spinner_item
+            R.layout.spinner_item_white
         )
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        adapter.setDropDownViewResource(R.layout.spinner_dropdown_white)
         binding.spinnerViewType.adapter = adapter
         
         binding.spinnerViewType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -210,25 +223,91 @@ class AdminRevenueActivity : AppCompatActivity() {
 
         revenueViewModel.revenueByMovie.observe(this) { revenueMap ->
             if (currentViewType == 0) {
+                val totalRevenue = revenueMap.values.sum()
+                val revenuesList = revenueViewModel.revenues.value ?: emptyList()
+                val movieTicketsMap = revenuesList.groupBy { it.movieTitle }
+                    .mapValues { entry -> entry.value.sumOf { it.ticketCount } }
+
+                val totalTickets = movieTicketsMap.values.sum()
+
                 val sortedList = revenueMap.entries
                     .sortedByDescending { it.value }
-                    .map { it.key to it.value }
 
-                revenueAdapter = RevenueAdapter(sortedList)
+                val adapterItems = sortedList.mapIndexed { index, entry ->
+                    val revenue = entry.value
+                    val pct = if (totalRevenue > 0) ((revenue / totalRevenue) * 100).toInt() else 0
+                    val tickets = movieTicketsMap[entry.key] ?: 0
+                    val color = paletteColors[index % paletteColors.size]
+                    RevenueAdapterItem(
+                        title = entry.key,
+                        totalRevenue = revenue,
+                        ticketCount = tickets,
+                        percentage = pct,
+                        color = color
+                    )
+                }
+
+                revenueAdapter = RevenueAdapter(adapterItems)
                 binding.recyclerViewMovieRevenue.adapter = revenueAdapter
                 binding.tvRevenueTitle.text = "Doanh thu theo phim"
+
+                // Update Doughnut Chart
+                val slices = adapterItems.map {
+                    DoughnutChartView.Slice(
+                        label = it.title,
+                        value = it.totalRevenue,
+                        color = it.color
+                    )
+                }
+                val formatter = NumberFormat.getInstance(Locale("vi", "VN"))
+                binding.doughnutChartView.setData(
+                    slices,
+                    totalText = formatter.format(totalRevenue.toLong()) + "₫",
+                    totalSubText = "$totalTickets vé"
+                )
             }
         }
         
         revenueViewModel.revenueByRoom.observe(this) { roomMap ->
             if (currentViewType == 1) {
-                val sortedList = roomMap.entries
-                    .sortedByDescending { it.value }
-                    .map { it.key to it.value }
+                val totalRevenue = roomMap.values.sumOf { it.first }
+                val totalTickets = roomMap.values.sumOf { it.second }
 
-                revenueAdapter = RevenueAdapter(sortedList)
+                val sortedList = roomMap.entries
+                    .sortedByDescending { it.value.first }
+
+                val adapterItems = sortedList.mapIndexed { index, entry ->
+                    val revenue = entry.value.first
+                    val tickets = entry.value.second
+                    val pct = if (totalRevenue > 0) ((revenue / totalRevenue) * 100).toInt() else 0
+                    val color = paletteColors[index % paletteColors.size]
+                    RevenueAdapterItem(
+                        title = entry.key,
+                        totalRevenue = revenue,
+                        ticketCount = tickets,
+                        percentage = pct,
+                        color = color
+                    )
+                }
+
+                revenueAdapter = RevenueAdapter(adapterItems)
                 binding.recyclerViewMovieRevenue.adapter = revenueAdapter
                 binding.tvRevenueTitle.text = "Doanh thu theo phòng"
+
+                // Update Doughnut Chart
+                val slices = adapterItems.map {
+                    DoughnutChartView.Slice(
+                        label = it.title,
+                        value = it.totalRevenue,
+                        color = it.color
+                    )
+                }
+                val formatter = NumberFormat.getInstance(Locale("vi", "VN"))
+                binding.doughnutChartView.setData(
+                    slices,
+                    totalText = formatter.format(totalRevenue.toLong()) + "₫",
+                    totalSubText = "$totalTickets vé"
+                )
             }
         }
 

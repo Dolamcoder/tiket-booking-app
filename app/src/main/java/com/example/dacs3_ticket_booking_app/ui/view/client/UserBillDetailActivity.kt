@@ -76,10 +76,15 @@ class UserBillDetailActivity : AppCompatActivity() {
         // Set up cancel bill button click listener
         binding.btnCancelBill.setOnClickListener {
             val bill = billViewModel.billDetail.value
-            if (bill != null) {
-                showCancelConfirmationDialog(bill.id)
+            val showtime = showtimeViewModel.showtimeDetail.value
+            if (bill != null && showtime != null) {
+                if (canCancelBill(showtime)) {
+                    showCancelConfirmationDialog(bill.id)
+                } else {
+                    Toast.makeText(this, "Không thể hủy vé sát giờ chiếu (dưới 2 tiếng)!", Toast.LENGTH_LONG).show()
+                }
             } else {
-                Toast.makeText(this, "Bill data not loaded yet", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Dữ liệu chưa tải xong", Toast.LENGTH_SHORT).show()
             }
         }
         
@@ -108,6 +113,11 @@ class UserBillDetailActivity : AppCompatActivity() {
                     movieViewModel.getMovieByShowtimeId(bill.showtimeId)
                     showtimeViewModel.getShowtimeById(bill.showtimeId)
                     roomViewModel.getRoomByShowtimeId(bill.showtimeId)
+                    
+                    val showtime = showtimeViewModel.showtimeDetail.value
+                    if (showtime != null) {
+                        updateCancelButtonState(bill, showtime)
+                    }
                     
                     // Display seats
                     val seatNames = bill.seatPositions.map { SeatUtils.positionToDisplay(it) }
@@ -193,6 +203,12 @@ class UserBillDetailActivity : AppCompatActivity() {
                     tvScreeningDate.text = "Ngày chiếu: ${showtime.screeningDate}"
                     tvTimeSlot.text = "Khung giờ: ${showtime.timeSlot}"
                     tvPriceTier.text = "Loại vé: ${showtime.priceTier}"
+                    
+                    // Check cancellation rule
+                    val bill = billViewModel.billDetail.value
+                    if (bill != null) {
+                        updateCancelButtonState(bill, showtime)
+                    }
                 }
             }
         }
@@ -213,6 +229,48 @@ class UserBillDetailActivity : AppCompatActivity() {
         }
     }
 
+    private fun canCancelBill(showtime: com.example.dacs3_ticket_booking_app.data.model.Showtime): Boolean {
+        return try {
+            val dateStr = showtime.screeningDate // e.g. "24/05/2026"
+            val timeStartStr = showtime.timeSlot.split("-").firstOrNull()?.trim() ?: return false // e.g. "08:00"
+            val dateTimeStr = "$dateStr $timeStartStr"
+            val parser = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+            val showtimeDate = parser.parse(dateTimeStr) ?: return false
+            val currentTime = System.currentTimeMillis()
+            val difference = showtimeDate.time - currentTime
+            difference >= 2 * 60 * 60 * 1000 // 2 hours in milliseconds
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    private fun updateCancelButtonState(
+        bill: com.example.dacs3_ticket_booking_app.data.model.Bill,
+        showtime: com.example.dacs3_ticket_booking_app.data.model.Showtime
+    ) {
+        binding.apply {
+            if (bill.status != "paid") {
+                btnCancelBill.visibility = View.GONE
+                tvCancelPolicy.visibility = View.GONE
+                return
+            }
+            
+            if (canCancelBill(showtime)) {
+                btnCancelBill.visibility = View.VISIBLE
+                btnCancelBill.isEnabled = true
+                btnCancelBill.setBackgroundColor(resources.getColor(android.R.color.holo_orange_dark, null))
+                tvCancelPolicy.text = "Lưu ý: Vé chỉ có thể hủy trước giờ chiếu 2 tiếng."
+                tvCancelPolicy.setTextColor(resources.getColor(android.R.color.white, null))
+            } else {
+                btnCancelBill.visibility = View.VISIBLE
+                btnCancelBill.isEnabled = false
+                btnCancelBill.setBackgroundColor(resources.getColor(android.R.color.darker_gray, null))
+                tvCancelPolicy.text = "❌ Không thể hủy vé này (chỉ được hủy trước giờ chiếu 2 tiếng)."
+                tvCancelPolicy.setTextColor(resources.getColor(android.R.color.holo_red_light, null))
+            }
+        }
+    }
 
     private fun showCancelConfirmationDialog(billId: String) {
         AlertDialog.Builder(this)

@@ -448,6 +448,16 @@
                 android:textColor="@android:color/white"
                 android:background="#FF6B35"
                 android:padding="12dp"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:id="@+id/tvCancelPolicy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Lưu ý: Vé chỉ có thể hủy trước giờ chiếu 2 tiếng."
+                android:textColor="#cccccc"
+                android:textSize="12sp"
+                android:gravity="center"
                 android:layout_marginBottom="12dp" />
 
             <Space
