@@ -68,6 +68,9 @@ class MainActivity : AppCompatActivity() {
                     R.id.search -> {
                         startActivity(Intent(this@MainActivity, SearchMovieActivity::class.java))
                     }
+                    R.id.chat_ai -> {
+                        startActivity(Intent(this@MainActivity, ChatActivity::class.java))
+                    }
                     R.id.home -> {
                         // TODO: Xử lý Explorer
                     }

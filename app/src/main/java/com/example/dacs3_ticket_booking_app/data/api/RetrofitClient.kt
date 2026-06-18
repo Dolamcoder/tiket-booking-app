@@ -21,6 +21,9 @@ object RetrofitClient {
     val qrService: QRService by lazy {
         retrofit.create(QRService::class.java)
     }
+    val chatService: ChatService by lazy {
+        retrofit.create(ChatService::class.java)
+    }
 }
 
 
