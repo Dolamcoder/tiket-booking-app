@@ -161,7 +161,7 @@ class AdminQRScanActivity : AppCompatActivity(), BarcodeCallback {
                 if (response.isSuccessful) {
                     val body = response.body()!!
                     if (body.valid) {
-                        val message = """ ${body.message} Số vé đã đặt: ${body.count}""".trimIndent()
+                        val message = """ ${body.message} \n Số vé đã đặt: ${body.count}""".trimIndent()
                         showSuccessDialog(message) {
                             binding.barcodeScanner.resume()
                         }

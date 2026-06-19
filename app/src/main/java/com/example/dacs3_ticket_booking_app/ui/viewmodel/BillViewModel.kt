@@ -136,6 +136,7 @@ class BillViewModel : ViewModel() {
         _isLoading.value = true
         viewModelScope.launch {
             val result = billRepository.updateBillStatus(billId, "cancelled")
+            billRepository.clearQrCodeData(billId)
             result.onSuccess {
                 _successMessage.value = "Bill cancelled successfully"
                 _isLoading.value = false

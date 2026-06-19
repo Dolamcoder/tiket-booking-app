@@ -98,7 +98,17 @@ class BillRepository {
             Result.failure(e)
         }
     }
+    suspend fun clearQrCodeData(billId: String): Result<Unit> {
+        return try {
+            billCollection.document(billId)
+                .update("qrCodeData", null)
+                .await()
 
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
     suspend fun deleteBill(billId: String): Result<Unit> {
         return try {
             billCollection.document(billId).delete().await()
