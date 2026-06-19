@@ -26,7 +26,6 @@ class LoginActivity : AppCompatActivity() {
         authViewModel = ViewModelProvider(this).get(AuthViewModel::class.java)
         sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
 
-        // ✅ Nút Đăng nhập
         binding.loginBtn.setOnClickListener {
             val email = binding.emailInput.text.toString().trim()
             val password = binding.passwordInput.text.toString().trim()
@@ -36,7 +35,6 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
-        // ✅ Link đến trang đăng ký
         binding.registerLink.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
@@ -69,7 +67,6 @@ class LoginActivity : AppCompatActivity() {
     private fun observeViewModel() {
         authViewModel.loginSuccess.observe(this) { (userId, role) ->
             if (userId != null && role != null) {
-                // ✅ Lưu state vào SharedPreferences
                 sharedPreferences.edit().apply {
                     putString("userId", userId)
                     putString("role", role)
@@ -79,7 +76,6 @@ class LoginActivity : AppCompatActivity() {
 
                 Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show()
 
-                // ✅ Điều hướng dựa trên role
                 when (role) {
                     "admin" -> {
                         startActivity(Intent(this, AdminActivity::class.java))

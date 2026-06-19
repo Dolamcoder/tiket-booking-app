@@ -71,7 +71,6 @@ class SeatListActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // ✅ Remove listener khi activity bị destroy
         showtimeListenerRegistration?.remove()
         releaseAllLockedSeats()
     }
@@ -91,7 +90,6 @@ class SeatListActivity : AppCompatActivity() {
 
     private fun backOnClick() {
         binding.backBtn.setOnClickListener { 
-            // ✅ Release tất cả lock khi user quay lại
             releaseAllLockedSeats()
             finish() 
         }
@@ -134,7 +132,7 @@ class SeatListActivity : AppCompatActivity() {
     private fun observeViewModel() {
         // Theo dõi danh sách ngày chiếu
         showtimeViewModel.screeningDates.observe(this) { dates ->
-            android.util.Log.d("SeatListActivity", "✅ Loaded ${dates.size} screening dates")
+            android.util.Log.d("SeatListActivity", "Loaded ${dates.size} screening dates")
             binding.dateRecyclerView.layoutManager = 
                 LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
             binding.dateRecyclerView.adapter = DateAdapter(dates) { selectedDate ->
@@ -181,11 +179,10 @@ class SeatListActivity : AppCompatActivity() {
 
         // Theo dõi lỗi từ Bill ViewModel
         billViewModel.errorMessage.observe(this) { msg ->
-            android.util.Log.e("SeatListActivity", "❌ Bill Error: $msg")
+            android.util.Log.e("SeatListActivity", "Bill Error: $msg")
             android.widget.Toast.makeText(this, msg, android.widget.Toast.LENGTH_SHORT).show()
         }
 
-        // ✅ Observer thành công tạo Bill - chỉ thêm một lần
         if (!billSuccessObserverAdded) {
             billViewModel.successMessage.observe(this) { msg ->
                 if (msg.contains("successfully")) {
@@ -211,12 +208,10 @@ class SeatListActivity : AppCompatActivity() {
             billSuccessObserverAdded = true
         }
 
-        // ✅ Observer QR response - chỉ thêm một lần
         if (!qrObserverAdded) {
             qrViewModel.qrCodeData.observe(this) { qrResponse ->
                 if (qrResponse != null && qrResponse.success) {
-                    android.util.Log.d("SeatListActivity", "✅ QR generated successfully")
-                    // ✅ Navigate to Payment Activity
+                    android.util.Log.d("SeatListActivity", "QR generated successfully")
                     billViewModel.updateBillQRData(pendingBillId, qrResponse.qrImage?:"")
                     val paymentIntent = Intent(this@SeatListActivity, PaymentActivity::class.java).apply {
                         putExtra(PaymentActivity.BILL_ID, pendingBillId)
@@ -232,7 +227,7 @@ class SeatListActivity : AppCompatActivity() {
             qrObserverAdded = true
         }
         qrViewModel.errorMessage.observe(this) { msg ->
-            android.util.Log.e("SeatListActivity", "❌ QR Error: $msg")
+            android.util.Log.e("SeatListActivity", " QR Error: $msg")
             android.widget.Toast.makeText(this, "Lỗi tạo QR: $msg", android.widget.Toast.LENGTH_SHORT).show()
         }
 
@@ -265,7 +260,6 @@ class SeatListActivity : AppCompatActivity() {
         }
         
         if (selectedShowtime != null) {
-            // ✅ Lưu priceTier từ showtime
             selectedPriceTier = selectedShowtime.priceTier
             showtimeViewModel.selectShowtime(selectedShowtime)
         } else {
@@ -284,9 +278,8 @@ class SeatListActivity : AppCompatActivity() {
         // Tạo map position -> name để SeatAdapter sử dụng (A1-A8, không lối đi)
         val seatNameMap = seatCells.associate { it.position to it.name }
         
-        android.util.Log.d("SeatListActivity", "📍 Seat map size: ${seatNameMap.size}")
+        android.util.Log.d("SeatListActivity", " Seat map size: ${seatNameMap.size}")
         
-        // ✅ Hiển thị giá vé theo priceTier
         val unitPrice = PriceManager.getPrice(selectedPriceTier)
         binding.priceTxt.text = "Giá: ${PriceManager.getPriceLabel(selectedPriceTier)}/ghế"
         
@@ -302,12 +295,11 @@ class SeatListActivity : AppCompatActivity() {
                 override fun Return(selectedName: String, num: Int) {
                     selectedSeatCount = num
                     selectedSeatPositions = seatAdapter?.getSelectedPositions() ?: emptyList()
-                    android.util.Log.d("SeatListActivity", "✅ Selected positions: $selectedSeatPositions, count: $num")
+                    android.util.Log.d("SeatListActivity", "Selected positions: $selectedSeatPositions, count: $num")
                     binding.numberSelectedTxt.text = "$num Ghế Được Chọn"
                     price = PriceManager.calculateTotal(selectedPriceTier, num)
                     binding.priceTxt.text = "Tổng: ${PriceManager.formatPrice(price)}"
                     
-                    // ✅ LOCK GHẾ NGAY KHI CHỌN
                     lockSelectedSeats()
                 }
             },
@@ -315,20 +307,16 @@ class SeatListActivity : AppCompatActivity() {
         )
         binding.seatRecylerView.adapter = seatAdapter
         
-        // ✅ Tải danh sách ghế đã được đặt từ showtime
         val selectedShowtime = showtimeViewModel.selectedShowtime.value
         if (selectedShowtime != null) {
             android.util.Log.d("SeatListActivity", "🔒 Setting unavailable seats: ${selectedShowtime.bookedSeats}, locked: ${selectedShowtime.lockedSeats.keys}")
-            // ✅ Hiển thị ghế lock của người khác + ghế đã booked
             // Không bao gồm ghế lock của chính mình (lockedPositions trống lúc đầu)
             seatAdapter?.setUnavailableSeats((selectedShowtime.bookedSeats + selectedShowtime.lockedSeats.keys).toList())
             
-            // ✅ Real-time listener để cập nhật ghế
             setupShowtimeListener(selectedShowtime.id)
         }
     }
     
-    // ✅ LOCK/UNLOCK GHẾ KHI CHỌN/BỎ CHỌN
     private fun lockSelectedSeats() {
         val selectedShowtime = showtimeViewModel.selectedShowtime.value
         if (selectedShowtime == null) return
@@ -357,7 +345,6 @@ class SeatListActivity : AppCompatActivity() {
         }
     }
     
-    // ✅ Real-time listener
     private fun setupShowtimeListener(showtimeId: String) {
         val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
         val showtimeRef = db.collection("showtimes").document(showtimeId)
@@ -366,25 +353,23 @@ class SeatListActivity : AppCompatActivity() {
         
         showtimeListenerRegistration = showtimeRef.addSnapshotListener { snapshot, error ->
             if (error != null) {
-                android.util.Log.e("SeatListActivity", "❌ Listener error: ${error.message}")
+                android.util.Log.e("SeatListActivity", " Listener error: ${error.message}")
                 return@addSnapshotListener
             }
             
             if (snapshot != null && snapshot.exists()) {
                 val updatedShowtime = snapshot.toObject(com.example.dacs3_ticket_booking_app.data.model.Showtime::class.java)
                 if (updatedShowtime != null) {
-                    // ✅ Không bao gồm ghế lock của chính mình (lockedPositions)
                     // Chỉ hiển thị ghế lock của người khác
                     val othersLockedSeats = (updatedShowtime.lockedSeats.keys - lockedPositions).toList()
                     val allUnavailable = updatedShowtime.bookedSeats + othersLockedSeats
-                    android.util.Log.d("SeatListActivity", "🔄 Updated unavailable seats: $allUnavailable, my locked: $lockedPositions")
+                    android.util.Log.d("SeatListActivity", "Updated unavailable seats: $allUnavailable, my locked: $lockedPositions")
                     seatAdapter?.updateSeatsStatus(allUnavailable)
                 }
             }
         }
     }
     
-    // ✅ THANH TOÁN - tạo Bill rồi redirect sang payment
     private fun confirmBooking() {
         if (selectedSeatCount == 0) {
             android.widget.Toast.makeText(this, "Vui lòng chọn ít nhất 1 ghế", android.widget.Toast.LENGTH_SHORT).show()
@@ -409,7 +394,7 @@ class SeatListActivity : AppCompatActivity() {
             return
         }
 
-        android.util.Log.d("SeatListActivity", "💾 Creating bill with ${selectedSeats.size} seats: $selectedSeats")
+        android.util.Log.d("SeatListActivity", "Creating bill with ${selectedSeats.size} seats: $selectedSeats")
         
         val unitPrice = PriceManager.getPrice(selectedPriceTier)
         val bill = Bill(
@@ -423,12 +408,10 @@ class SeatListActivity : AppCompatActivity() {
             qrCodeData = ""
         )
 
-        // ✅ Tạo Bill trong Firestore (nhận ID)
         // Observer sẽ tự động trigger khi addBill() thành công
         billViewModel.addBill(bill)
     }
 
-    // ✅ Handle Payment Result
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -445,7 +428,6 @@ class SeatListActivity : AppCompatActivity() {
                         android.widget.Toast.LENGTH_LONG
                     ).show()
                     
-                    // ✅ Điều hướng thẳng đến trang chi tiết hóa đơn (UserBillDetailActivity)
                     val detailIntent = android.content.Intent(this, UserBillDetailActivity::class.java).apply {
                         putExtra("BILL_ID", pendingBillId)
                     }
@@ -453,7 +435,6 @@ class SeatListActivity : AppCompatActivity() {
                     finish()
                 }
                 RESULT_CANCELED -> {
-                    // ❌ Payment thất bại - Bill & ghế đã được xóa/unlock ở PaymentActivity
                     lockedPositions.clear()
                     android.widget.Toast.makeText(
                         this,

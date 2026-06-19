@@ -9,27 +9,27 @@ class PaymentRepository {
 
     suspend fun initiatePayment(amount: Long): Result<String> {
         return try {
-            Log.d("PaymentRepository", "💳 Initiating payment with amount: $amount")
+            Log.d("PaymentRepository", "Initiating payment with amount: $amount")
             val request = PaymentRequest(amount = amount)
             val payUrl = paymentService.payment(request)  // Server returns String directly
-            Log.d("PaymentRepository", "✅ Payment URL received: $payUrl")
+            Log.d("PaymentRepository", "Payment URL received: $payUrl")
             Result.success(payUrl)
         } catch (e: Exception) {
-            Log.e("PaymentRepository", "❌ Payment error: ${e.message}")
+            Log.e("PaymentRepository", "Payment error: ${e.message}")
             Result.failure(e)
         }
     }
 
     suspend fun checkPaymentStatus(resultCode: String): Result<Boolean> {
         return try {
-            Log.d("PaymentRepository", "🔍 Checking payment status with code: $resultCode")
+            Log.d("PaymentRepository", " Checking payment status with code: $resultCode")
             val response = paymentService.checkPayment(resultCode)
-            Log.d("PaymentRepository", "📋 Payment check response: $response")
+            Log.d("PaymentRepository", "Payment check response: $response")
             // resultCode "0" = successful
             val isSuccess = resultCode == "0"
             Result.success(isSuccess)
         } catch (e: Exception) {
-            Log.e("PaymentRepository", "❌ Check payment error: ${e.message}")
+            Log.e("PaymentRepository", "Check payment error: ${e.message}")
             Result.failure(e)
         }
     }

@@ -266,7 +266,7 @@ class UserBillDetailActivity : AppCompatActivity() {
                 btnCancelBill.visibility = View.VISIBLE
                 btnCancelBill.isEnabled = false
                 btnCancelBill.setBackgroundColor(resources.getColor(android.R.color.darker_gray, null))
-                tvCancelPolicy.text = "❌ Không thể hủy vé này (chỉ được hủy trước giờ chiếu 2 tiếng)."
+                tvCancelPolicy.text = "Không thể hủy vé này (chỉ được hủy trước giờ chiếu 2 tiếng)."
                 tvCancelPolicy.setTextColor(resources.getColor(android.R.color.holo_red_light, null))
             }
         }

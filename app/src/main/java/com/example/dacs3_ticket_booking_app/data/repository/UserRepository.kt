@@ -11,7 +11,6 @@ class UserRepository {
     private val db = FirebaseFirestore.getInstance()
     private val userCollection = db.collection("users")
 
-    // ✅ Lấy tất cả users
     suspend fun getAllUsers(): Result<List<User>> {
         return try {
             val snapshot = userCollection.get().await()
@@ -22,7 +21,6 @@ class UserRepository {
         }
     }
 
-    // ✅ Lấy user theo ID
     suspend fun getUserById(userId: String): Result<User?> {
         return try {
             val doc = userCollection.document(userId).get().await()
@@ -54,7 +52,6 @@ class UserRepository {
             Result.failure(e)
         }
     }
-    // ✅ Xóa user
     suspend fun deleteUser(userId: String): Result<Unit> {
         return try {
             userCollection.document(userId).delete().await()
@@ -63,7 +60,6 @@ class UserRepository {
             Result.failure(e)
         }
     }
-    // ✅ Cập nhật role user
     suspend fun updateUserRole(userId: String, newRole: String): Result<Unit> {
         return try {
             userCollection.document(userId).update(
@@ -76,7 +72,6 @@ class UserRepository {
         }
     }
 
-    // ✅ Cập nhật thông tin user
     suspend fun updateUser(user: User): Result<Unit> {
         return try {
             userCollection.document(user.id).set(user).await()
@@ -86,7 +81,6 @@ class UserRepository {
         }
     }
 
-    // ✅ Lấy users theo role
     suspend fun getUsersByRole(role: String): Result<List<User>> {
         return try {
             val snapshot = userCollection.whereEqualTo("role", role).get().await()

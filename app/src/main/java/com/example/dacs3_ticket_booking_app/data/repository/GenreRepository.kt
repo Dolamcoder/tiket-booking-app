@@ -9,7 +9,6 @@ class GenreRepository {
     private val db = FirebaseFirestore.getInstance()
     private val genreCollection = db.collection("genres")
 
-    // ✅ Thêm thể loại (auto ID)
     suspend fun addGenre(genre: Genre): Result<String> {
         return try {
             val docRef = genreCollection.document()
@@ -23,7 +22,6 @@ class GenreRepository {
         }
     }
 
-    // ✅ Lấy tất cả thể loại
     suspend fun getAllGenres(): Result<List<Genre>> {
         return try {
             val snapshot = genreCollection.get().await()
@@ -35,7 +33,6 @@ class GenreRepository {
         }
     }
 
-    // ✅ Lấy thể loại theo ID
     suspend fun getGenreById(id: String): Result<Genre?> {
         return try {
             val doc = genreCollection.document(id).get().await()
@@ -47,7 +44,6 @@ class GenreRepository {
         }
     }
 
-    // ✅ Update thể loại
     suspend fun updateGenre(genre: Genre): Result<Unit> {
         return try {
             genreCollection.document(genre.id)
@@ -61,7 +57,6 @@ class GenreRepository {
         }
     }
 
-    // ✅ Xóa thể loại
     suspend fun deleteGenre(genreId: String): Result<Unit> {
         return try {
             genreCollection.document(genreId)
@@ -75,12 +70,10 @@ class GenreRepository {
         }
     }
 
-    // 🔍 Tìm kiếm thể loại theo tên (Client-side filtering)
     fun searchGenresByName(genres: List<Genre>, query: String): List<Genre> {
         return genres.filter { it.name.contains(query, ignoreCase = true) }
     }
 
-    // 📊 Sắp xếp thể loại theo tên (A-Z)
     fun sortGenresByName(genres: List<Genre>, ascending: Boolean = true): List<Genre> {
         return if (ascending) {
             genres.sortedBy { it.name }

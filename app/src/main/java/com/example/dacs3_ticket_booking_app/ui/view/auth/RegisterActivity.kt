@@ -21,7 +21,6 @@ class RegisterActivity : AppCompatActivity() {
 
         authViewModel = ViewModelProvider(this).get(AuthViewModel::class.java)
 
-        // ✅ Nút Đăng ký
         binding.registerBtn.setOnClickListener {
             val email = binding.emailInput.text.toString().trim()
             val fullName = binding.fullNameInput.text.toString().trim()
@@ -33,7 +32,6 @@ class RegisterActivity : AppCompatActivity() {
             }
         }
 
-        // ✅ Link đến trang đăng nhập
         binding.loginLink.setOnClickListener {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()

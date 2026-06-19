@@ -27,20 +27,16 @@ class ProfileActivity : AppCompatActivity() {
 
         firebaseAuth = FirebaseAuth.getInstance()
 
-        // ✅ Hiển thị thông tin user
         displayUserInfo()
 
-        // ✅ Nút Logout
         binding.logoutBtn.setOnClickListener {
             logout()
         }
 
-        // ✅ Nút Quay lại
         binding.backBtn.setOnClickListener {
             finish()
         }
 
-        // ✅ Nút My Bills
         binding.myBillsBtn.setOnClickListener {
             startActivity(Intent(this, UserBillHistoryActivity::class.java))
         }
@@ -57,10 +53,8 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun logout() {
-        // ✅ Đăng xuất Firebase
         firebaseAuth.signOut()
 
-        // ✅ Xóa session từ SharedPreferences
         val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
         sharedPreferences.edit().apply {
             remove("userId")
@@ -71,7 +65,6 @@ class ProfileActivity : AppCompatActivity() {
 
         Toast.makeText(this, "Đã đăng xuất", Toast.LENGTH_SHORT).show()
 
-        // ✅ Quay lại Splash Screen
         startActivity(Intent(this, SplashActivity::class.java))
         finish()
     }

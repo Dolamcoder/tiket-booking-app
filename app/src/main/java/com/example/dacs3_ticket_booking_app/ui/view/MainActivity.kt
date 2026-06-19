@@ -78,7 +78,6 @@ class MainActivity : AppCompatActivity() {
             }
         })
         
-        // ✅ Hiển thị tên người dùng
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
             val userName = currentUser.displayName ?: "User"
@@ -97,15 +96,12 @@ class MainActivity : AppCompatActivity() {
         movieViewModel.getAllMovies()
     }
     
-    // ✅ Khởi tạo Speech to Text
     private fun initSpeechToText() {
         speechToTextUtil = SpeechToTextUtil(
             context = this,
             onResult = { recognizedText ->
-                // ✅ Cập nhật text vào search box
                 binding.searchEditText.setText(recognizedText)
                 Toast.makeText(this, "Tìm kiếm: $recognizedText", Toast.LENGTH_SHORT).show()
-                // ✅ Optional: Thực hiện tìm kiếm ngay
                 searchMovies(recognizedText)
             },
             onError = { errorMsg ->
@@ -113,11 +109,9 @@ class MainActivity : AppCompatActivity() {
             }
         )
         
-        // ✅ Setup click listener cho icon microphone
         setupSearchUI()
     }
     
-     // ✅ Setup Search UI
     private fun setupSearchUI() {
         binding.searchEditText.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
@@ -132,10 +126,8 @@ class MainActivity : AppCompatActivity() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                // 🔥 Real-time search - auto search khi text thay đổi
                 val searchQuery = s.toString().trim()
                 if (searchQuery.isNotEmpty() && searchQuery != "Tên film") {
-                    android.util.Log.d("MainActivity", "🔍 Real-time search: $searchQuery")
                     movieViewModel.searchMoviesByTitle(searchQuery)
                 } else if (searchQuery.isEmpty()) {
                     // Quay lại danh sách bình thường
@@ -152,7 +144,6 @@ class MainActivity : AppCompatActivity() {
             if (event.action == android.view.MotionEvent.ACTION_UP) {
                 val drawableEnd = binding.searchEditText.compoundDrawables[DRAWABLE_END]
                 if (drawableEnd != null && event.x >= (binding.searchEditText.width - binding.searchEditText.paddingRight - drawableEnd.intrinsicWidth)) {
-                    // ✅ Nhấn vào microphone icon
                     if (speechToTextUtil.hasMicrophonePermission()) {
                         speechToTextUtil.startListening(speechRecognitionLauncher)
                     } else {
@@ -164,7 +155,6 @@ class MainActivity : AppCompatActivity() {
             false
         }
         
-        // ✅ Bắt sự kiện Enter để tìm kiếm (backup)
         binding.searchEditText.setOnEditorActionListener { v, actionId, event ->
             if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH) {
                 val searchQuery = binding.searchEditText.text.toString().trim()
@@ -178,7 +168,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
-    // ✅ Tìm kiếm phim (giữ lại cho compatibility)
     private fun searchMovies(query: String) {
         if (query.isEmpty() || query == "Tên film") {
             movieViewModel.getAllMovies()
@@ -189,7 +178,6 @@ class MainActivity : AppCompatActivity() {
 
         movieViewModel.searchMoviesByTitle(query)
     }
-    // ✅ Request quyền Microphone
     private fun requestMicrophonePermission() {
         androidx.core.app.ActivityCompat.requestPermissions(
             this,
@@ -210,7 +198,6 @@ class MainActivity : AppCompatActivity() {
             binding.progressBarSlider.visibility= View.GONE
         }
 
-        // 🔥 Observe NOW SHOWING movies - tự động update khi search
         movieViewModel.nowShowingMovies.observe(this) { nowShowingMovies ->
             binding.recyclerViewTopMovies.layoutManager=
                 LinearLayoutManager(
@@ -222,7 +209,6 @@ class MainActivity : AppCompatActivity() {
             binding.progressTopMovies.visibility= View.GONE
         }
 
-        // 🔥 Observe COMING SOON movies - tự động update khi search
         movieViewModel.comingSoonMovies.observe(this) { comingSoonMovies ->
             binding.recyclerViewUpcomingMovies.layoutManager=
                 LinearLayoutManager(

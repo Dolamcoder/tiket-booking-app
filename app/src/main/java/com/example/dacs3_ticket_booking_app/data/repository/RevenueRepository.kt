@@ -10,7 +10,6 @@ class RevenueRepository {
     private val db = FirebaseFirestore.getInstance()
     private val revenueCollection = db.collection("revenues")
 
-    // ✅ Lấy tất cả doanh thu
     suspend fun getAllRevenues(): Result<List<Revenue>> {
         return try {
             val snapshot = revenueCollection.get().await()
@@ -27,7 +26,6 @@ class RevenueRepository {
         }
     }
     
-    // ✅ Tính doanh thu từ Bills (fallback method)
     private suspend fun getRevenuesFromBills(): Result<List<Revenue>> {
         return try {
             val billsCollection = db.collection("bills")
@@ -92,7 +90,6 @@ class RevenueRepository {
         }
     }
 
-    // ✅ Lấy doanh thu theo movie
     suspend fun getRevenueByMovie(movieId: String): Result<List<Revenue>> {
         return try {
             val snapshot = revenueCollection
@@ -106,7 +103,6 @@ class RevenueRepository {
         }
     }
 
-    // ✅ Lấy doanh thu theo khoảng ngày
     suspend fun getRevenueByDateRange(startDate: Long, endDate: Long): Result<List<Revenue>> {
         return try {
             val snapshot = revenueCollection
@@ -126,7 +122,6 @@ class RevenueRepository {
         }
     }
     
-    // ✅ Tính doanh thu từ Bills trong khoảng ngày
     private suspend fun getRevenuesFromBillsByDateRange(startDate: Long, endDate: Long): Result<List<Revenue>> {
         return try {
             val billsCollection = db.collection("bills")
@@ -192,29 +187,24 @@ class RevenueRepository {
         }
     }
 
-    // ✅ Tính tổng doanh thu
     fun calculateTotalRevenue(revenues: List<Revenue>): Double {
         return revenues.sumOf { it.totalRevenue }
     }
 
-    // ✅ Tính tổng vé bán
     fun calculateTotalTickets(revenues: List<Revenue>): Int {
         return revenues.sumOf { it.ticketCount }
     }
 
-    // ✅ Doanh thu theo phim (Local processing)
     fun groupRevenueByMovie(revenues: List<Revenue>): Map<String, Double> {
         return revenues.groupingBy { it.movieTitle }
             .fold(0.0) { acc, revenue -> acc + revenue.totalRevenue }
     }
 
-    // ✅ Doanh thu theo ngày (Local processing)
     fun groupRevenueByDate(revenues: List<Revenue>): Map<Long, Double> {
         return revenues.groupingBy { it.date }
             .fold(0.0) { acc, revenue -> acc + revenue.totalRevenue }
     }
 
-    // ✅ Thêm bản ghi doanh thu mới
     suspend fun addRevenue(revenue: Revenue): Result<String> {
         return try {
             val docRef = revenueCollection.document()
@@ -226,7 +216,6 @@ class RevenueRepository {
         }
     }
 
-    // ✅ Xóa bản ghi doanh thu
     suspend fun deleteRevenue(revenueId: String): Result<Unit> {
         return try {
             revenueCollection.document(revenueId).delete().await()
@@ -236,7 +225,6 @@ class RevenueRepository {
         }
     }
 
-    // ✅ Lấy doanh thu theo showtimeId
     suspend fun getRevenueByShowtime(showtimeId: String): Result<List<Revenue>> {
         return try {
             val snapshot = revenueCollection
@@ -250,14 +238,12 @@ class RevenueRepository {
         }
     }
 
-    // ✅ Doanh thu theo phòng (Local processing) 
     fun groupRevenueByRoom(showtimeIds: List<String>): Map<String, Double> {
         // showtimeIds contain room info, need to fetch from database
         // For now, we'll implement a simpler version that groups by showtimeId
         return emptyMap()
     }
     
-    // ✅ Lấy doanh thu theo phòng từ bills
     suspend fun getRevenueByRoomFromBills(): Result<Map<String, Pair<Double, Int>>> {
         return try {
             val billsCollection = db.collection("bills")

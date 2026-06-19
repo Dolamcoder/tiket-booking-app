@@ -9,7 +9,6 @@ class MovieRepository {
     private val db = FirebaseFirestore.getInstance()
     private val movieCollection = db.collection("movies")
 
-    // ✅ Thêm phim (auto ID)
     suspend fun addMovie(movie: Movie): Result<String> {
         return try {
             val docRef = movieCollection.document()
@@ -23,7 +22,6 @@ class MovieRepository {
         }
     }
 
-    // ✅ Lấy tất cả phim
     suspend fun getAllMovies(): Result<List<Movie>> {
         return try {
             val snapshot = movieCollection.get().await();
@@ -35,7 +33,6 @@ class MovieRepository {
         }
     }
 
-    // ✅ Lấy theo ID
     suspend fun getMovieById(id: String): Result<Movie?> {
         return try {
             val doc = movieCollection.document(id).get().await()
@@ -47,7 +44,6 @@ class MovieRepository {
         }
     }
 
-    // ✅ Update phim
     suspend fun updateMovie(movie: Movie): Result<Unit> {
         return try {
             movieCollection.document(movie.id)
@@ -61,7 +57,6 @@ class MovieRepository {
         }
     }
 
-    // ✅ Xóa phim
     suspend fun deleteMovie(movieId: String): Result<Unit> {
         return try {
             movieCollection.document(movieId)
@@ -75,7 +70,6 @@ class MovieRepository {
         }
     }
 
-    // 🔥 Lọc theo status
     suspend fun getMoviesByStatus(status: String): Result<List<Movie>> {
         return try {
             val snapshot = movieCollection
@@ -91,7 +85,6 @@ class MovieRepository {
         }
     }
 
-    // 🔥 Lọc theo genre
     suspend fun getMoviesByGenre(genre: String): Result<List<Movie>> {
         return try {
             val snapshot = movieCollection
@@ -107,12 +100,10 @@ class MovieRepository {
         }
     }
 
-    // 🔍 Tim kiem phim theo tieu de (Client-side filtering)
     fun searchMoviesByTitle(movies: List<Movie>, query: String): List<Movie> {
         return movies.filter { it.title.contains(query, ignoreCase = true) }
     }
 
-    // 🔍 Tìm kiếm phim nâng cao (Client-side filtering - nhiều tham số)
     fun advancedSearchMovies(
         movies: List<Movie>,
         title: String? = null,
@@ -176,7 +167,6 @@ class MovieRepository {
         }
     }
 
-    // 📊 Cập nhật số lượng vé bán cho phim
     suspend fun updateTicketsSold(movieId: String, quantity: Int): Result<Unit> {
         return try {
             movieCollection.document(movieId).update(
@@ -188,7 +178,6 @@ class MovieRepository {
         }
     }
 
-    // 💰 Cập nhật doanh thu cho phim
     suspend fun updateRevenue(movieId: String, revenue: Double, ticketsSold:Int): Result<Unit> {
         return try {
             movieCollection.document(movieId).update(
@@ -201,7 +190,6 @@ class MovieRepository {
         }
     }
 
-    // 🔄 Sắp xếp phim theo số vé bán (nhiều nhất trước)
     fun sortMoviesByTicketsSold(movies: List<Movie>, descending: Boolean = true): List<Movie> {
         return if (descending) {
             movies.sortedByDescending { it.ticketsSold }
@@ -210,7 +198,6 @@ class MovieRepository {
         }
     }
 
-    // 🔄 Sắp xếp phim theo doanh thu (cao nhất trước)
     fun sortMoviesByRevenue(movies: List<Movie>, descending: Boolean = true): List<Movie> {
         return if (descending) {
             movies.sortedByDescending { it.totalRevenue }
@@ -219,7 +206,6 @@ class MovieRepository {
         }
     }
 
-    // 🎬 Lấy phim theo showtimeId
     suspend fun getMovieByShowtimeId(showtimeId: String): Result<Movie?> {
         return try {
             val showtimeCollection = db.collection("showtimes")

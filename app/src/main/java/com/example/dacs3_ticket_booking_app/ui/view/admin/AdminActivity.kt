@@ -32,7 +32,6 @@ class AdminActivity : AppCompatActivity() {
 
         setupNavigation()
         
-        // ✅ Nút Logout
         binding.logoutBtn.setOnClickListener {
             logout()
         }
@@ -63,10 +62,8 @@ class AdminActivity : AppCompatActivity() {
     }
 
     private fun logout() {
-        // ✅ Đăng xuất Firebase
         firebaseAuth.signOut()
 
-        // ✅ Xóa session từ SharedPreferences
         val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
         sharedPreferences.edit().apply {
             remove("userId")
@@ -77,7 +74,6 @@ class AdminActivity : AppCompatActivity() {
 
         Toast.makeText(this, "Đã đăng xuất", Toast.LENGTH_SHORT).show()
 
-        // ✅ Quay lại Splash Screen
         startActivity(Intent(this, SplashActivity::class.java))
         finish()
     }

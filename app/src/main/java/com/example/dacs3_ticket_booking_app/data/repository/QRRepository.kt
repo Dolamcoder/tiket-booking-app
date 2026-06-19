@@ -29,19 +29,19 @@ class QRRepository {
     }
 
     suspend fun verifyQR(billId: String, endTime: Long, signature: String): Result<VerifyQRResponse> = try {
-        Log.d("QRRepository", "🔄 Verifying QR for bill: $billId")
+        Log.d("QRRepository", "Verifying QR for bill: $billId")
         val request = VerifyQRRequest(billId, endTime, signature)
         val response = qrService.verifyQR(request)
         if (response.isSuccessful && response.body() != null) {
             val body = response.body()!!
-            Log.d("QRRepository", "✅ QR verification result: valid=${body.valid}, message=${body.message}")
+            Log.d("QRRepository", "QR verification result: valid=${body.valid}, message=${body.message}")
             Result.success(body)
         } else {
-            Log.e("QRRepository", "❌ Verify API error: ${response.code()}")
+            Log.e("QRRepository", "Verify API error: ${response.code()}")
             Result.failure(Exception("API error: ${response.code()}"))
         }
     } catch (e: Exception) {
-        Log.e("QRRepository", "❌ Exception: ${e.message}")
+        Log.e("QRRepository", "Exception: ${e.message}")
         Result.failure(e)
     }
 }

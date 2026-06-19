@@ -27,7 +27,6 @@ class AdminBillAdapter(
             val seatsDisplay = ticket.seatPositions.joinToString(", ") { SeatUtils.positionToDisplay(it) }
             val seatCount = ticket.seatPositions.size
             binding.tvSeats.text = "Ghế: $seatsDisplay ($seatCount ghế)"
-            // ✅ Tính tổng tiền = price (giá đơn vị) * số lượng ghế
             val totalPrice = ticket.price * seatCount
             binding.tvTotalPrice.text = "Tổng: ${totalPrice.toInt()}đ"
             binding.tvStatus.text = when (ticket.status) {
@@ -46,7 +45,6 @@ class AdminBillAdapter(
                     .show()
             }
 
-            // ✅ Add click listener to view detail
             binding.root.setOnClickListener {
                 onItemClick?.invoke(ticket)
             }

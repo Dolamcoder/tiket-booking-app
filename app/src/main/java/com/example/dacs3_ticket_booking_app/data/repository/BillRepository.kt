@@ -11,7 +11,6 @@ class BillRepository {
     private val billCollection = db.collection("bills")
     private val revenueCollection = db.collection("revenues")
 
-    // ✅ Add new bill
     suspend fun addBill(bill: Bill): Result<String> {
         return try {
             val docRef = billCollection.document()
@@ -51,7 +50,6 @@ class BillRepository {
         }
     }
 
-    // ✅ Get all bills (Admin)
     suspend fun getAllBills(): Result<List<Bill>> {
         return try {
             val snapshot = billCollection.get().await()
@@ -76,7 +74,6 @@ class BillRepository {
         }
     }
 
-    // ✅ Get bills by showtimeId
     suspend fun getBillsByShowtime(showtimeId: String): Result<List<Bill>> {
         return try {
             val snapshot = billCollection
@@ -132,7 +129,6 @@ class BillRepository {
         }
     }
 
-    // ✅ Get bill by ID
     suspend fun getBillById(billId: String): Result<Bill?> {
         return try {
             val snapshot = billCollection.document(billId).get().await()

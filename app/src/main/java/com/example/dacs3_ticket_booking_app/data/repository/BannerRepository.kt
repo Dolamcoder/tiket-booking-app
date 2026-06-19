@@ -8,7 +8,6 @@ class BannerRepository {
 
     private val bannerRef = FirebaseFirestore.getInstance().collection("banners")
 
-    // ✅ CREATE
     suspend fun addBanner(banner: Banner): Result<String> {
         return try {
             val doc = bannerRef.document()
@@ -21,7 +20,6 @@ class BannerRepository {
         }
     }
 
-    // ✅ READ
     suspend fun getBanners(): Result<List<Banner>> {
         return try {
             val snapshot = bannerRef.get().await()
@@ -34,7 +32,6 @@ class BannerRepository {
         }
     }
 
-    // ✅ UPDATE
     suspend fun updateBanner(banner: Banner): Result<Unit> {
         return try {
             bannerRef.document(banner.id).set(banner).await()
@@ -44,7 +41,6 @@ class BannerRepository {
         }
     }
 
-    // ✅ DELETE
     suspend fun deleteBanner(id: String): Result<Unit> {
         return try {
             bannerRef.document(id).delete().await()

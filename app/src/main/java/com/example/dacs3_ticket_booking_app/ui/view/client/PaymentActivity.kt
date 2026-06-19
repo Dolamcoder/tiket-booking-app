@@ -64,7 +64,7 @@ PaymentActivity : AppCompatActivity() {
         binding.webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                 if (url != null && url.contains("check-payment")) {
-                    Log.d("PaymentActivity", "🔍 Intercepted callback URL: $url")
+                    Log.d("PaymentActivity", "Intercepted callback URL: $url")
                     handlePaymentCallback(url)
                     return true  // Prevent default behavior
                 }
@@ -73,13 +73,13 @@ PaymentActivity : AppCompatActivity() {
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                Log.d("PaymentActivity", "🌐 Page loaded: $url")
+                Log.d("PaymentActivity", "Page loaded: $url")
                 binding.progressBar.visibility = View.GONE
             }
 
             override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
                 super.onPageStarted(view, url, favicon)
-                Log.d("PaymentActivity", "🌐 Page starting: $url")
+                Log.d("PaymentActivity", "Page starting: $url")
                 binding.progressBar.visibility = View.VISIBLE
             }
         }
@@ -94,7 +94,7 @@ PaymentActivity : AppCompatActivity() {
     private fun observeViewModel() {
         paymentViewModel.paymentUrl.observe(this) { url ->
             if (url.isNotEmpty()) {
-                Log.d("PaymentActivity", "✅ Loading payment URL: $url")
+                Log.d("PaymentActivity", "Loading payment URL: $url")
                 binding.webView.loadUrl(url)
             }
         }
@@ -104,35 +104,34 @@ PaymentActivity : AppCompatActivity() {
         }
 
         paymentViewModel.errorMessage.observe(this) { msg ->
-            Log.e("PaymentActivity", "❌ Error: $msg")
+            Log.e("PaymentActivity", " Error: $msg")
             android.widget.Toast.makeText(this, msg, android.widget.Toast.LENGTH_SHORT).show()
             finish()
         }
 
         paymentViewModel.paymentSuccess.observe(this) { isSuccess ->
             if (isSuccess) {
-                Log.d("PaymentActivity", "✅ Payment successful!")
+                Log.d("PaymentActivity", " Payment successful!")
                 android.widget.Toast.makeText(
                     this,
-                    "✅ Thanh toán thành công",
+                    "Thanh toán thành công",
                     android.widget.Toast.LENGTH_SHORT
                 ).show()
                 setResult(RESULT_OK)
                 finish()
             } else {
-                Log.d("PaymentActivity", "❌ Payment failed!")
+                Log.d("PaymentActivity", " Payment failed!")
                 handlePaymentFailure()
             }
         }
     }
 
     private fun initiatePayment() {
-        // ✅ Gọi API để lấy payment URL
         paymentViewModel.initiatePayment(amount)
     }
 
     private fun handlePaymentCallback(url: String) {
-        Log.d("PaymentActivity", "🔍 Handling payment callback: $url")
+        Log.d("PaymentActivity", "Handling payment callback: $url")
 
         // Parse resultCode từ URL query parameters
         // URL format: http://localhost:3000/api/check-payment?resultCode=0
@@ -143,31 +142,25 @@ PaymentActivity : AppCompatActivity() {
             "1" // Default to failure
         }
 
-        Log.d("PaymentActivity", "📊 Result Code: $resultCode")
 
         if (resultCode == "0") {
-            // ✅ Payment successful
-            Log.d("PaymentActivity", "✅ Payment successful (resultCode=0)")
+            Log.d("PaymentActivity", " Payment successful (resultCode=0)")
             handlePaymentSuccess()
         } else {
-            // ❌ Payment failed
-            Log.d("PaymentActivity", "❌ Payment failed (resultCode=$resultCode)")
+            Log.d("PaymentActivity", " Payment failed (resultCode=$resultCode)")
             handlePaymentFailure()
         }
     }
 
     private fun handlePaymentSuccess() {
-        Log.d("PaymentActivity", "✅ Processing successful payment...")
-        
-        // ✅ 1. Update bill status to "paid"
+
         billViewModel.updateStatusBill(billId, "paid")
         
-        // ✅ 2. Confirm booking - thêm ghế vào danh sách booked
         showtimeViewModel.confirmBooking(showtimeId, selectedSeats)
 
         android.widget.Toast.makeText(
             this,
-            "✅ Thanh toán thành công",
+            "Thanh toán thành công",
             android.widget.Toast.LENGTH_SHORT
         ).show()
 
@@ -176,8 +169,7 @@ PaymentActivity : AppCompatActivity() {
     }
 
     private fun handlePaymentFailure() {
-        Log.d("PaymentActivity", "❌ Processing payment failure...")
-        // ❌ Payment failed
+        Log.d("PaymentActivity", "Processing payment failure...")
         // 1. Xóa Bill
         billViewModel.deleteBill(billId)
 
@@ -186,7 +178,7 @@ PaymentActivity : AppCompatActivity() {
 
         android.widget.Toast.makeText(
             this,
-            "❌ Thanh toán thất bại. Vui lòng thử lại",
+            "Thanh toán thất bại. Vui lòng thử lại",
             android.widget.Toast.LENGTH_SHORT
         ).show()
 

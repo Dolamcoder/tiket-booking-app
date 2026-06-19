@@ -9,7 +9,6 @@ class RoomRepository {
     private val db = FirebaseFirestore.getInstance()
     private val roomCollection = db.collection("rooms")
 
-    // ✅ Thêm phòng chiếu
     suspend fun addRoom(room: Room): Result<String> {
         return try {
             val docRef = roomCollection.document()
@@ -21,7 +20,6 @@ class RoomRepository {
         }
     }
 
-    // ✅ Lấy tất cả phòng
     suspend fun getAllRooms(): Result<List<Room>> {
         return try {
             val snapshot = roomCollection.get().await()
@@ -32,7 +30,6 @@ class RoomRepository {
         }
     }
 
-    // ✅ Lấy phòng theo ID
     suspend fun getRoomById(id: String): Result<Room?> {
         return try {
             val doc = roomCollection.document(id).get().await()
@@ -43,7 +40,6 @@ class RoomRepository {
         }
     }
 
-    // ✅ Cập nhật phòng
     suspend fun updateRoom(room: Room): Result<Unit> {
         return try {
             roomCollection.document(room.id).set(room).await()
@@ -53,7 +49,6 @@ class RoomRepository {
         }
     }
 
-    // ✅ Xóa phòng
     suspend fun deleteRoom(roomId: String): Result<Unit> {
         return try {
             roomCollection.document(roomId).delete().await()
@@ -63,7 +58,6 @@ class RoomRepository {
         }
     }
 
-    // ✅ Lấy phòng theo showtimeId
     suspend fun getRoomByShowtimeId(showtimeId: String): Result<Room?> {
         return try {
             val showtimeCollection = db.collection("showtimes")
