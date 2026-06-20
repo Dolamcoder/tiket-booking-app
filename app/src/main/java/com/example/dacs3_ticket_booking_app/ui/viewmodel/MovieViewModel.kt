@@ -5,54 +5,60 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dacs3_ticket_booking_app.data.model.Movie
+import com.example.dacs3_ticket_booking_app.data.model.Review
 import com.example.dacs3_ticket_booking_app.data.repository.MovieRepository
 import com.example.dacs3_ticket_booking_app.data.repository.ShowtimeRepository
+import com.google.firebase.firestore.DocumentSnapshot
 import kotlinx.coroutines.launch
 
 class MovieViewModel : ViewModel() {
     private val movieRepository = MovieRepository()
     private val showtimeRepository = ShowtimeRepository()
 
-    // LiveData for all movies
     private val _movies = MutableLiveData<List<Movie>>()
     val movies: LiveData<List<Movie>> = _movies
 
-    // LiveData for single movie detail
     private val _movieDetail = MutableLiveData<Movie?>()
     val movieDetail: LiveData<Movie?> = _movieDetail
 
-    // LiveData for now showing movies
     private val _nowShowingMovies = MutableLiveData<List<Movie>>()
     val nowShowingMovies: LiveData<List<Movie>> = _nowShowingMovies
 
-    // LiveData for coming soon movies
     private val _comingSoonMovies = MutableLiveData<List<Movie>>()
     val comingSoonMovies: LiveData<List<Movie>> = _comingSoonMovies
 
-    // LiveData for loading state
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
-    // LiveData for error messages
     private val _errorMessage = MutableLiveData<String>()
     val errorMessage: LiveData<String> = _errorMessage
 
-    // LiveData for success message
     private val _successMessage = MutableLiveData<String>()
     val successMessage: LiveData<String> = _successMessage
 
-    // 🔍 LiveData cho kết quả tìm kiếm nâng cao
     private val _searchResults = MutableLiveData<List<Movie>>()
     val searchResults: LiveData<List<Movie>> = _searchResults
 
-    // Get all movies
+    // Phân trang Reviews
+    private val _reviews = MutableLiveData<List<Review>>()
+    val reviews: LiveData<List<Review>> = _reviews
+
+    private val _totalReviews = MutableLiveData<Int>(0)
+    val totalReviews: LiveData<Int> = _totalReviews
+
+    private val _currentPage = MutableLiveData<Int>(1)
+    val currentPage: LiveData<Int> = _currentPage
+
+    private val pageSize = 5
+    private val pageCursors = mutableMapOf<Int, DocumentSnapshot?>()
+    private var isFetchingReviews = false
+
     fun getAllMovies() {
         _isLoading.value = true
         viewModelScope.launch {
             val result = movieRepository.getAllMovies()
             result.onSuccess { list ->
                 _movies.value = list
-                // Separate movies by status
                 _nowShowingMovies.value = list.filter { it.status == "now_showing" }
                 _comingSoonMovies.value = list.filter { it.status == "coming_soon" }
                 _isLoading.value = false
@@ -64,7 +70,6 @@ class MovieViewModel : ViewModel() {
         }
     }
 
-    // Get movie by ID
     fun getMovieById(id: String) {
         _isLoading.value = true
         viewModelScope.launch {
@@ -73,6 +78,7 @@ class MovieViewModel : ViewModel() {
                 if (movie != null) {
                     _movieDetail.value = movie
                     _movies.value = listOf(movie)
+                    getReviewsForMovie(id)
                 }
                 _isLoading.value = false
             }
@@ -83,171 +89,82 @@ class MovieViewModel : ViewModel() {
         }
     }
 
-    // Add new movie
-    fun addMovie(movie: Movie) {
-        _isLoading.value = true
+    fun getReviewsForMovie(movieId: String) {
+        pageCursors.clear()
+        pageCursors[1] = null
+        _currentPage.value = 1
+        
         viewModelScope.launch {
-            val result = movieRepository.addMovie(movie)
-            result.onSuccess { id ->
-                _successMessage.value = "Thêm phim thành công (ID: $id)"
-                _isLoading.value = false
-                getAllMovies()
-            }
-            result.onFailure { exception ->
-                _errorMessage.value = "Lỗi thêm phim: ${exception.message}"
-                _isLoading.value = false
+            val countResult = movieRepository.getReviewCount(movieId)
+            countResult.onSuccess { count ->
+                _totalReviews.value = count.toInt()
+                loadPage(movieId, 1)
             }
         }
     }
 
-    // Update movie
-    fun updateMovie(movie: Movie) {
+    fun loadNextPage(movieId: String) {
+        val current = _currentPage.value ?: 1
+        val totalPages = Math.ceil((_totalReviews.value ?: 0).toDouble() / pageSize).toInt()
+        if (current < totalPages) {
+            loadPage(movieId, current + 1)
+        }
+    }
+
+    fun loadPrevPage(movieId: String) {
+        val current = _currentPage.value ?: 1
+        if (current > 1) {
+            loadPage(movieId, current - 1)
+        }
+    }
+
+    private fun loadPage(movieId: String, page: Int) {
+        if (isFetchingReviews) return
+        isFetchingReviews = true
+
+        viewModelScope.launch {
+            val cursor = pageCursors[page]
+            val result = movieRepository.getPaginatedReviews(movieId, pageSize.toLong(), cursor)
+            result.onSuccess { (newReviews, lastDoc) ->
+                _reviews.value = newReviews
+                _currentPage.value = page
+                if (lastDoc != null) {
+                    pageCursors[page + 1] = lastDoc
+                }
+                isFetchingReviews = false
+            }
+            result.onFailure { exception ->
+                _errorMessage.value = "Lỗi tải trang $page: ${exception.message}"
+                isFetchingReviews = false
+            }
+        }
+    }
+
+    fun addReview(review: Review) {
         _isLoading.value = true
         viewModelScope.launch {
-            val result = movieRepository.updateMovie(movie)
+            val result = movieRepository.addReview(review)
             result.onSuccess {
-                _successMessage.value = "Cập nhật phim thành công"
-                _isLoading.value = false
-                getAllMovies()
-            }
-            result.onFailure { exception ->
-                _errorMessage.value = "Lỗi cập nhật phim: ${exception.message}"
+                _successMessage.value = "Đã gửi đánh giá của bạn"
+                getReviewsForMovie(review.movieId)
                 _isLoading.value = false
             }
-        }
-    }
-
-    // Delete movie
-    fun deleteMovie(movieId: String) {
-        _isLoading.value = true
-        viewModelScope.launch {
-            val result = movieRepository.deleteMovie(movieId)
-            result.onSuccess {
-                _successMessage.value = "Xóa phim thành công"
-                _isLoading.value = false
-                getAllMovies()
-            }
-            result.onFailure { exception ->
-                _errorMessage.value = "Lỗi xóa phim: ${exception.message}"
-                _isLoading.value = false
-            }
-        }
-    }
-
-    // Get movies by status
-    fun getMoviesByStatus(status: String) {
-        _isLoading.value = true
-        viewModelScope.launch {
-            val result = movieRepository.getMoviesByStatus(status)
-            result.onSuccess { list ->
-                _movies.value = list
-                _isLoading.value = false
-            }
-            result.onFailure { exception ->
-                _errorMessage.value = "Lỗi lọc phim theo trạng thái: ${exception.message}"
-                _isLoading.value = false
-            }
-        }
-    }
-
-    // Get movies by genre
-    fun getMoviesByGenre(genre: String) {
-        _isLoading.value = true
-        viewModelScope.launch {
-            val result = movieRepository.getMoviesByGenre(genre)
-            result.onSuccess { list ->
-                _movies.value = list
-                _isLoading.value = false
-            }
-            result.onFailure { exception ->
-                _errorMessage.value = "Lỗi lọc phim theo thể loại: ${exception.message}"
+            result.onFailure {
+                _errorMessage.value = "Lỗi khi gửi đánh giá: ${it.message}"
                 _isLoading.value = false
             }
         }
     }
 
     fun searchMoviesByTitle(query: String) {
-        // Lấy tất cả phim đã load lúc trước
         val allMovies = mutableListOf<Movie>().apply {
             addAll(_nowShowingMovies.value ?: emptyList())
             addAll(_comingSoonMovies.value ?: emptyList())
         }
-        
-        // Filter client-side
-        val filtered = if (query.isEmpty()) {
-            allMovies
-        } else {
-            movieRepository.searchMoviesByTitle(allMovies, query)
-        }
-        
-        // 🔥 Cập nhật 2 adapter riêng
-        val nowShowingFiltered = filtered.filter { it.status == "now_showing" }
-        val comingSoonFiltered = filtered.filter { it.status == "coming_soon" }
-        
-        _nowShowingMovies.value = nowShowingFiltered
-        _comingSoonMovies.value = comingSoonFiltered
+        val filtered = if (query.isEmpty()) allMovies else movieRepository.searchMoviesByTitle(allMovies, query)
+        _nowShowingMovies.value = filtered.filter { it.status == "now_showing" }
+        _comingSoonMovies.value = filtered.filter { it.status == "coming_soon" }
         _movies.value = filtered
-    }
-
-    // 📊 Sắp xếp phim theo tên
-    fun sortMoviesByTitle(ascending: Boolean = true) {
-        val currentMovies = _movies.value ?: return
-        val sorted = movieRepository.sortMoviesByTitle(currentMovies, ascending)
-        _movies.value = sorted
-    }
-
-    // 📊 Sắp xếp phim theo năm
-    fun sortMoviesByYear(ascending: Boolean = false) {
-        val currentMovies = _movies.value ?: return
-        val sorted = movieRepository.sortMoviesByYear(currentMovies, ascending)
-        _movies.value = sorted
-    }
-
-    // 📊 Sắp xếp phim theo thời lượng
-    fun sortMoviesByDuration(ascending: Boolean = true) {
-        val currentMovies = _movies.value ?: return
-        val sorted = movieRepository.sortMoviesByDuration(currentMovies, ascending)
-        _movies.value = sorted
-    }
-
-    // 📊 Cập nhật số lượng vé bán cho phim
-    fun updateTicketsSold(movieId: String, quantity: Int) {
-        viewModelScope.launch {
-            val result = movieRepository.updateTicketsSold(movieId, quantity)
-            result.onSuccess {
-                getAllMovies()
-            }
-            result.onFailure { exception ->
-                _errorMessage.value = "Lỗi cập nhật số vé: ${exception.message}"
-            }
-        }
-    }
-
-    // 💰 Cập nhật doanh thu cho phim
-    fun updateRevenue(movieId: String, revenue: Double, ticketsSold: Int) {
-        viewModelScope.launch {
-            val result = movieRepository.updateRevenue(movieId, revenue, ticketsSold)
-            result.onSuccess {
-                getAllMovies()
-            }
-            result.onFailure { exception ->
-                _errorMessage.value = "Lỗi cập nhật doanh thu: ${exception.message}"
-            }
-        }
-    }
-
-    // 📊 Sắp xếp phim theo số vé bán (nhiều nhất trước)
-    fun sortMoviesByTicketsSold(descending: Boolean = true) {
-        val currentMovies = _movies.value ?: return
-        val sorted = movieRepository.sortMoviesByTicketsSold(currentMovies, descending)
-        _movies.value = sorted
-    }
-
-    // 📊 Sắp xếp phim theo doanh thu (cao nhất trước)
-    fun sortMoviesByRevenue(descending: Boolean = true) {
-        val currentMovies = _movies.value ?: return
-        val sorted = movieRepository.sortMoviesByRevenue(currentMovies, descending)
-        _movies.value = sorted
     }
 
     // Lấy phim theo ID suất chiếu
@@ -266,50 +183,42 @@ class MovieViewModel : ViewModel() {
         }
     }
 
-    // 🔍 Tìm kiếm phim nâng cao - nhiều tham số
-    fun advancedSearch(
-        title: String?,
-        description: String?,
-        genres: List<String>?,
-        castName: String?,
-        priceTier: String? // "morning" | "afternoon" | "evening" | null (tất cả)
-    ) {
+    // Các hàm quản lý phim (Khôi phục lại)
+    fun addMovie(movie: Movie) {
+        viewModelScope.launch {
+            movieRepository.addMovie(movie).onSuccess { getAllMovies() }
+        }
+    }
+
+    fun updateMovie(movie: Movie) {
+        viewModelScope.launch {
+            movieRepository.updateMovie(movie).onSuccess { getAllMovies() }
+        }
+    }
+
+    fun deleteMovie(movieId: String) {
+        viewModelScope.launch {
+            movieRepository.deleteMovie(movieId).onSuccess { getAllMovies() }
+        }
+    }
+
+    fun updateRevenue(movieId: String, revenue: Double, ticketsSold: Int) {
+        viewModelScope.launch {
+            movieRepository.updateRevenue(movieId, revenue, ticketsSold)
+        }
+    }
+
+    fun advancedSearch(title: String?, description: String?, genres: List<String>?, castName: String?, priceTier: String?) {
         _isLoading.value = true
         viewModelScope.launch {
             try {
-                val moviesResult = movieRepository.getAllMovies()
-                val allMovies = moviesResult.getOrThrow()
-
-                var filtered = movieRepository.advancedSearchMovies(
-                    movies = allMovies,
-                    title = title,
-                    description = description,
-                    genres = genres,
-                    castName = castName
-                )
-
-                if (!priceTier.isNullOrBlank()) {
-                    val showtimesResult = showtimeRepository.getAllShowtimes()
-                    val allShowtimes = showtimesResult.getOrThrow()
-
-                    // Lọc showtimes có priceTier match
-                    val matchingMovieIds = allShowtimes
-                        .filter { it.priceTier == priceTier }
-                        .map { it.movieId }
-                        .distinct()
-
-                    filtered = filtered.filter { it.id in matchingMovieIds }
-                }
-
-                filtered = filtered.sortedByDescending { it.ticketsSold }
-
+                val allMovies = movieRepository.getAllMovies().getOrThrow()
+                var filtered = movieRepository.advancedSearchMovies(allMovies, title, description, genres, castName)
                 _searchResults.value = filtered
                 _isLoading.value = false
-
             } catch (e: Exception) {
-                _errorMessage.value = "Lỗi tìm kiếm: ${e.message}"
+                _errorMessage.value = e.message
                 _isLoading.value = false
-                _searchResults.value = emptyList()
             }
         }
     }

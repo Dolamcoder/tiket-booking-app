@@ -407,9 +407,7 @@
                 android:background="#2d2d2d"
                 android:padding="12dp"
                 android:gravity="center"
-                android:layout_marginBottom="12dp"
-                android:clickable="true"
-                android:focusable="true">
+                android:layout_marginBottom="12dp">
 
                 <ImageView
                     android:id="@+id/ivQrCode"
@@ -425,7 +423,7 @@
                     android:id="@+id/tvQrPlaceholder"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Nhấn để xem QR Code"
+                    android:text="Mã QR chưa có sẵn"
                     android:textSize="14sp"
                     android:textColor="#cccccc" />
 
@@ -435,6 +433,33 @@
                     android:layout_height="wrap_content"
                     android:visibility="gone"
                     android:layout_marginTop="8dp" />
+
+                <LinearLayout
+                    android:id="@+id/qrActionsLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:visibility="gone"
+                    android:layout_marginTop="8dp">
+
+                    <Button
+                        android:id="@+id/btnSaveQr"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Lưu QR"
+                        android:textSize="12sp"
+                        android:layout_marginEnd="8dp"
+                        android:backgroundTint="#4CAF50" />
+
+                    <Button
+                        android:id="@+id/btnShareQr"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Chia Sẻ"
+                        android:textSize="12sp"
+                        android:backgroundTint="#2196F3" />
+                </LinearLayout>
             </LinearLayout>
 
             <!-- Cancel Bill Button -->

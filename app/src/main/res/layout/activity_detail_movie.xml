@@ -403,6 +403,183 @@
 
                         </LinearLayout>
 
+                        <!-- DIVIDER after Cast -->
+                        <View
+                            android:id="@+id/divider3"
+                            android:layout_width="0dp"
+                            android:layout_height="0.5dp"
+                            android:layout_marginStart="24dp"
+                            android:layout_marginEnd="24dp"
+                            android:background="#33FFFFFF"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/castSection" />
+
+                        <!-- ========== REVIEW SECTION ========== -->
+                        <LinearLayout
+                            android:id="@+id/reviewSection"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="24dp"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/divider3">
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="16dp">
+
+                                <TextView
+                                    android:id="@+id/tvReviewsLabel"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Reviews"
+                                    android:textColor="@android:color/white"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent" />
+
+                                <TextView
+                                    android:id="@+id/btnWriteReview"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Write a review"
+                                    android:textColor="#00CC44"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintEnd_toEndOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent" />
+                            </androidx.constraintlayout.widget.ConstraintLayout>
+
+                            <!-- Add Review Form (Initially Hidden) -->
+                            <LinearLayout
+                                android:id="@+id/layoutAddReview"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:visibility="gone"
+                                android:layout_marginBottom="16dp"
+                                android:padding="12dp"
+                                android:background="@drawable/rounded_button_semi_black">
+
+                                <RatingBar
+                                    android:id="@+id/rbInputRating"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:numStars="5"
+                                    android:stepSize="1"
+                                    android:progressTint="#FFA726"
+                                    android:layout_gravity="center_horizontal"
+                                    android:layout_marginBottom="8dp"/>
+
+                                <com.google.android.material.textfield.TextInputLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:hint="Tell us what you think..."
+                                    app:hintTextColor="#88FFFFFF"
+                                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                                    <com.google.android.material.textfield.TextInputEditText
+                                        android:id="@+id/etReviewComment"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:textColor="@android:color/white"
+                                        android:inputType="textMultiLine|textCapSentences"
+                                        android:imeOptions="actionDone"
+                                        android:minLines="2" />
+                                </com.google.android.material.textfield.TextInputLayout>
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="end"
+                                    android:layout_marginTop="8dp">
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btnHideKeyboardUI"
+                                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Ẩn bàn phím"
+                                        android:textColor="#88FFFFFF"
+                                        android:layout_marginEnd="8dp" />
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btnSubmitReview"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Submit"
+                                        app:cornerRadius="8dp" />
+                                </LinearLayout>
+                            </LinearLayout>
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/rvReviews"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:nestedScrollingEnabled="false"
+                                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                                tools:listitem="@layout/item_review" />
+
+                            <!-- Pagination Controls -->
+                            <LinearLayout
+                                android:id="@+id/layoutPagination"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center"
+                                android:layout_marginTop="16dp"
+                                android:visibility="gone"
+                                tools:visibility="visible">
+
+                                <ImageButton
+                                    android:id="@+id/btnPrevPage"
+                                    android:layout_width="40dp"
+                                    android:layout_height="40dp"
+                                    android:src="@drawable/back_dark"
+                                    android:background="?attr/selectableItemBackgroundBorderless"
+                                    android:contentDescription="Previous Page"
+                                    android:tint="@android:color/white" />
+
+                                <TextView
+                                    android:id="@+id/tvPageNumbers"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginHorizontal="16dp"
+                                    android:text="Trang 1 / 5"
+                                    android:textColor="@android:color/white"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold" />
+
+                                <ImageButton
+                                    android:id="@+id/btnNextPage"
+                                    android:layout_width="40dp"
+                                    android:layout_height="40dp"
+                                    android:src="@drawable/back_dark"
+                                    android:rotation="180"
+                                    android:background="?attr/selectableItemBackgroundBorderless"
+                                    android:contentDescription="Next Page"
+                                    android:tint="@android:color/white" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/tvNoReviews"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:padding="20dp"
+                                android:text="No reviews yet. Be the first to review!"
+                                android:textColor="#888888"
+                                android:visibility="gone" />
+
+                        </LinearLayout>
+
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
                 </com.google.android.material.card.MaterialCardView>

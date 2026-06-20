@@ -28,9 +28,9 @@ class QRRepository {
         Result.failure(e)
     }
 
-    suspend fun verifyQR(billId: String, endTime: Long, signature: String): Result<VerifyQRResponse> = try {
+    suspend fun verifyQR(billId: String, endTime: Long, signature: String, count: Long): Result<VerifyQRResponse> = try {
         Log.d("QRRepository", "Verifying QR for bill: $billId")
-        val request = VerifyQRRequest(billId, endTime, signature)
+        val request = VerifyQRRequest(billId, endTime, signature, count)
         val response = qrService.verifyQR(request)
         if (response.isSuccessful && response.body() != null) {
             val body = response.body()!!

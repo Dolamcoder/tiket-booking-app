@@ -48,12 +48,12 @@ class QRViewModel : ViewModel() {
         }
     }
 
-    fun verifyQR(billId: String, endTime: Long, signature: String) {
+    fun verifyQR(billId: String, endTime: Long, signature: String, count: Long) {
         _isLoading.value = true
         Log.d("QRViewModel", "🔐 Verifying QR: billId=$billId")
 
         viewModelScope.launch {
-            val result = qrRepository.verifyQR(billId, endTime, signature)
+            val result = qrRepository.verifyQR(billId, endTime, signature, count)
             result.onSuccess { response ->
                 Log.d("QRViewModel", "✅ Verification result: valid=${response.valid}, message=${response.message}")
                 _verifyResult.value = response

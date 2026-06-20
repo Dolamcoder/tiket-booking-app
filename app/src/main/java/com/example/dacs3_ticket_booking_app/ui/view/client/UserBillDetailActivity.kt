@@ -15,8 +15,10 @@ import com.example.dacs3_ticket_booking_app.ui.viewmodel.RoomViewModel
 import com.example.dacs3_ticket_booking_app.ui.viewmodel.ShowtimeViewModel
 import com.example.dacs3_ticket_booking_app.utils.PriceManager
 import com.example.dacs3_ticket_booking_app.utils.SeatUtils
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Base64
+import com.example.dacs3_ticket_booking_app.utils.ImageUtils
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -61,18 +63,27 @@ class UserBillDetailActivity : AppCompatActivity() {
         roomViewModel = ViewModelProvider(this).get(RoomViewModel::class.java)
     }
 
+    private var qrBitmap: Bitmap? = null
+
     private fun setupUI() {
         binding.backBtn.setOnClickListener { finish() }
-        
-        // Set up QR code container click listener
-        binding.qrCodeContainer.setOnClickListener {
-            Toast.makeText(
-                this,
-                "QR đã được tải từ hóa đơn",
-                Toast.LENGTH_SHORT
-            ).show()
+
+        binding.btnSaveQr.setOnClickListener {
+            qrBitmap?.let { bitmap ->
+                val bill = billViewModel.billDetail.value
+                val fileName = "Ticket_QR_${bill?.id?.take(8) ?: "Unknown"}"
+                ImageUtils.saveBitmapToGallery(this, bitmap, fileName)
+            }
         }
-        
+
+        binding.btnShareQr.setOnClickListener {
+            qrBitmap?.let { bitmap ->
+                val bill = billViewModel.billDetail.value
+                val fileName = "Ticket_QR_${bill?.id?.take(8) ?: "Unknown"}"
+                ImageUtils.shareBitmap(this, bitmap, fileName)
+            }
+        }
+
         // Set up cancel bill button click listener
         binding.btnCancelBill.setOnClickListener {
             val bill = billViewModel.billDetail.value
@@ -146,12 +157,14 @@ class UserBillDetailActivity : AppCompatActivity() {
                                 0,
                                 decodedBytes.size
                             )
+                            qrBitmap = bitmap
 
                             binding.apply {
                                 ivQrCode.setImageBitmap(bitmap)
                                 ivQrCode.visibility = View.VISIBLE
                                 tvQrPlaceholder.visibility = View.GONE
                                 qrProgressBar.visibility = View.GONE
+                                qrActionsLayout.visibility = View.VISIBLE
                             }
 
                         } catch (e: Exception) {

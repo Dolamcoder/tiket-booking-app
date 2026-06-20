@@ -90,7 +90,13 @@ class AdminBillDetailActivity : AppCompatActivity() {
                     userViewModel.getUserById(bill.userId)
                     
                     // Display seats
-                    val seatNames = bill.seatPositions.map { SeatUtils.positionToDisplay(it) }
+                    val seatNames = bill.seatPositions.map { 
+                        try {
+                            com.example.dacs3_ticket_booking_app.utils.SeatUtils.positionToDisplay(it)
+                        } catch (e: Exception) {
+                            it
+                        }
+                    }
                     tvSeats.text = "Ghế: ${seatNames.joinToString(", ")}"
                     
                     // Display pricing
@@ -137,6 +143,8 @@ class AdminBillDetailActivity : AppCompatActivity() {
             if (user != null) {
                 binding.tvCustomer.text = "Khách hàng: ${user.fullName}"
                 binding.tvCustomerEmail.text = "Email: ${user.email}"
+                // Cập nhật số điện thoại nếu có trong model User (giả sử có field phone hoặc dùng placeholder)
+                binding.tvCustomerPhone.text = "Số điện thoại: Chưa cập nhật"
             }
         }
 

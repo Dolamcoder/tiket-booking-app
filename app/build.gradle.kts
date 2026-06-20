@@ -54,6 +54,7 @@ dependencies {
     testImplementation(libs.junit)
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
     implementation("com.github.ismaeldivita:chip-navigation-bar:1.4.0")
     implementation("com.cloudinary:cloudinary-android:2.3.1")
     implementation(libs.gson)

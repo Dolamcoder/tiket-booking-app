@@ -12,19 +12,18 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.dacs3_ticket_booking_app.databinding.ActivityAdminQrScanBinding
 import com.example.dacs3_ticket_booking_app.data.api.RetrofitClient
+import androidx.activity.viewModels
+import com.example.dacs3_ticket_booking_app.ui.viewmodel.QRViewModel
 import com.example.dacs3_ticket_booking_app.data.api.VerifyQRRequest
 import com.google.zxing.ResultPoint
 import com.journeyapps.barcodescanner.BarcodeCallback
 import com.journeyapps.barcodescanner.BarcodeResult
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
 class AdminQRScanActivity : AppCompatActivity(), BarcodeCallback {
 
     private lateinit var binding: ActivityAdminQrScanBinding
+    private val qrViewModel: QRViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,8 +41,33 @@ class AdminQRScanActivity : AppCompatActivity(), BarcodeCallback {
                 )
 
         setupUI()
-
+        observeViewModel()
         checkCameraPermission()
+    }
+
+    private fun observeViewModel() {
+        qrViewModel.verifyResult.observe(this) { response ->
+            if (response != null) {
+                if (response.valid) {
+                    val message = "${response.message}\nSố vé đã đặt: ${response.count}"
+                    showSuccessDialog(message) {
+                        binding.barcodeScanner.resume()
+                    }
+                } else {
+                    showErrorDialog("QR Không Hợp Lệ", response.message) {
+                        binding.barcodeScanner.resume()
+                    }
+                }
+            }
+        }
+
+        qrViewModel.errorMessage.observe(this) { msg ->
+            if (msg != null) {
+                showErrorDialog("Lỗi", msg) {
+                    binding.barcodeScanner.resume()
+                }
+            }
+        }
     }
 
     private fun setupUI() {
@@ -150,63 +174,8 @@ class AdminQRScanActivity : AppCompatActivity(), BarcodeCallback {
         }
     }
 
-    private fun verifyQRCode(billId: String, endTime: Long, signature: String, count:Long) {
-        MainScope().launch {
-            try {
-                val request = VerifyQRRequest(billId, endTime, signature, count)
-                val response = withContext(Dispatchers.IO) {
-                    RetrofitClient.qrService.verifyQR(request)
-                }
-
-                if (response.isSuccessful) {
-                    val body = response.body()!!
-                    if (body.valid) {
-                        val message = """ ${body.message} \n Số vé đã đặt: ${body.count}""".trimIndent()
-                        showSuccessDialog(message) {
-                            binding.barcodeScanner.resume()
-                        }
-                    } else {
-                        // QR is invalid or expired
-                        showErrorDialog("QR Không Hợp Lệ", body.message) {
-                            binding.barcodeScanner.resume()
-                        }
-                    }
-                } else {
-
-                    val errorBody = response.errorBody()?.string()
-
-                    var errorMessage = "Lỗi xác minh mã QR"
-
-                    try {
-                        if (!errorBody.isNullOrEmpty()) {
-                            val json = JSONObject(errorBody)
-
-                            errorMessage =
-                                json.optString(
-                                    "message",
-                                    json.optString(
-                                        "error",
-                                        "Lỗi xác minh mã QR"
-                                    )
-                                )
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-
-                    showErrorDialog(
-                        "QR Không Hợp Lệ",
-                        errorMessage
-                    ) {
-                        binding.barcodeScanner.resume()
-                    }
-                }
-            } catch (e: Exception) {
-                showErrorDialog("Lỗi Kết Nối", "Không thể kết nối tới máy chủ: ${e.message}") {
-                    binding.barcodeScanner.resume()
-                }
-            }
-        }
+    private fun verifyQRCode(billId: String, endTime: Long, signature: String, count: Long) {
+        qrViewModel.verifyQR(billId, endTime, signature, count)
     }
 
     private fun showSuccessDialog(message: String, onDismiss: () -> Unit) {

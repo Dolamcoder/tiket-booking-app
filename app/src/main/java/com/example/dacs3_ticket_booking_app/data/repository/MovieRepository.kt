@@ -1,7 +1,10 @@
 package com.example.dacs3_ticket_booking_app.data.repository
 
 import com.example.dacs3_ticket_booking_app.data.model.Movie
+import com.example.dacs3_ticket_booking_app.data.model.Review
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
 
 class MovieRepository {
@@ -218,6 +221,87 @@ class MovieRepository {
             } else {
                 Result.failure(Exception("Movie ID not found in showtime"))
             }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // --- Review Section ---
+
+    fun listenForReviews(movieId: String, onUpdate: (List<Review>) -> Unit, onError: (Exception) -> Unit) {
+        db.collection("reviews")
+            .whereEqualTo("movieId", movieId)
+            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    onError(e)
+                    return@addSnapshotListener
+                }
+                if (snapshot != null) {
+                    val reviews = snapshot.toObjects(Review::class.java)
+                    onUpdate(reviews)
+                }
+            }
+    }
+
+    suspend fun getReviewsByMovieId(movieId: String): Result<List<Review>> {
+        return try {
+            val snapshot = db.collection("reviews")
+                .whereEqualTo("movieId", movieId)
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .get()
+                .await()
+            val reviews = snapshot.toObjects(Review::class.java)
+            Result.success(reviews)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getReviewCount(movieId: String): Result<Long> {
+        return try {
+            val snapshot = db.collection("reviews")
+                .whereEqualTo("movieId", movieId)
+                .count()
+                .get(com.google.firebase.firestore.AggregateSource.SERVER)
+                .await()
+            Result.success(snapshot.count)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getPaginatedReviews(
+        movieId: String,
+        limit: Long,
+        lastDocument: DocumentSnapshot?
+    ): Result<Pair<List<Review>, DocumentSnapshot?>> {
+        return try {
+            var query = db.collection("reviews")
+                .whereEqualTo("movieId", movieId)
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .limit(limit)
+
+            if (lastDocument != null) {
+                query = query.startAfter(lastDocument)
+            }
+
+            val snapshot = query.get().await()
+            val reviews = snapshot.toObjects(Review::class.java)
+            val newLastDocument = if (snapshot.documents.isNotEmpty()) snapshot.documents.last() else null
+            
+            Result.success(Pair(reviews, newLastDocument))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun addReview(review: Review): Result<String> {
+        return try {
+            val docRef = db.collection("reviews").document()
+            val reviewWithId = review.copy(id = docRef.id)
+            docRef.set(reviewWithId).await()
+            Result.success(docRef.id)
         } catch (e: Exception) {
             Result.failure(e)
         }
