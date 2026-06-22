@@ -11,8 +11,17 @@ class PaymentRepository {
         return try {
             Log.d("PaymentRepository", "Initiating payment with amount: $amount")
             val request = PaymentRequest(amount = amount)
-            val payUrl = paymentService.payment(request)  // Server returns String directly
-            Log.d("PaymentRepository", "Payment URL received: $payUrl")
+            var payUrl = paymentService.payment(request)  // Server returns String directly
+            
+            // Làm sạch URL: xóa dấu ngoặc kép và khoảng trắng dư thừa
+            payUrl = payUrl.trim().removeSurrounding("\"")
+            
+            // Sửa lỗi nếu thiếu dấu : sau https (ví dụ https// thành https://)
+            if (payUrl.startsWith("https//")) {
+                payUrl = payUrl.replaceFirst("https//", "https://")
+            }
+            
+            Log.d("PaymentRepository", "Payment URL received and cleaned: $payUrl")
             Result.success(payUrl)
         } catch (e: Exception) {
             Log.e("PaymentRepository", "Payment error: ${e.message}")
